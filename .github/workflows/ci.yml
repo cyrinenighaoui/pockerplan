@@ -32,7 +32,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -65,7 +65,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
+
+      # Étape de debug pour être sûrs du chemin
+      - name: Debug - list root
+        run: |
+          pwd
+          ls -R
 
       - name: Install dependencies
         run: |
