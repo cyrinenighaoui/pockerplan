@@ -37,14 +37,8 @@ jobs:
       - name: Install dependencies
         run: |
           cd back
-          # Vérifier si le fichier requirements.txt existe
-          if [ -f "requirements.txt" ]; then
-            python -m pip install --upgrade pip
-            pip install -r requirements.txt
-          else
-            echo "requirements.txt non trouvé, installation des dépendances par défaut"
-            pip install django djangorestframework django-cors-headers
-          fi
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run Django migrations
         env:
@@ -75,34 +69,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Vérifier la structure des dossiers
-          if [ -d "front/pocker" ]; then
-            cd front/pocker
-          elif [ -d "frontend" ]; then
-            cd frontend
-          elif [ -d "front" ]; then
-            cd front
-          else
-            echo "Dossier frontend non trouvé"
-            exit 1
-          fi
+          cd front/pocker
           npm install
 
       - name: Build Next.js app
         run: |
-          # Utiliser la même logique pour trouver le dossier
-          if [ -d "front/pocker" ]; then
-            cd front/pocker
-          elif [ -d "frontend" ]; then
-            cd frontend
-          elif [ -d "front" ]; then
-            cd front
-          fi
-          
-          # Vérifier si le script build existe, sinon utiliser une alternative
-          if npm run | grep -q "build"; then
-            npm run build
-          else
-            echo "Script build non trouvé, tentative avec next build"
-            npx next build
-          fi
+          cd front/pocker
+          npm run build
