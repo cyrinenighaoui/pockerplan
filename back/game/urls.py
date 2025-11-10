@@ -1,0 +1,17 @@
+
+from django.urls import path
+from .views import create_room, export_results, get_current_task, get_votes, join_room, get_room, reveal_votes, set_backlog, get_backlog, submit_vote
+
+urlpatterns = [
+    path("rooms/create/", create_room),
+    path("rooms/join/", join_room),
+    path("rooms/<str:code>/", get_room),
+    path("rooms/<str:code>/backlog/", set_backlog),   # POST (upload/remplace)
+    path("rooms/<str:code>/backlog/export/", get_backlog),  # GET (télécharger)
+    path("rooms/<str:code>/vote/", submit_vote),
+    path("rooms/<str:code>/votes/", get_votes),
+    path("rooms/<str:code>/current/", get_current_task),
+    path("rooms/<str:code>/reveal/", reveal_votes),
+    path("rooms/<str:code>/export/", export_results),
+
+]
