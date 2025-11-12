@@ -78,7 +78,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({"type": "snapshot", **event})
 
     async def reveal_event(self, event):
-        await self.send_json({"event": "reveal_result", **event})
+        await self.send_json({"type": "reveal", **event})
 
 
     # ---------- DB helpers ----------

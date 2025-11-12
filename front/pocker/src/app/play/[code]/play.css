@@ -240,3 +240,38 @@ p { max-width: 720px; text-align:center; opacity:.95; margin-bottom: 8px; }
   transform: rotateY(180deg);
   font-size:24px;
 }
+.loading, .error, .completed {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+}
+
+.retry-btn, .debug-btn {
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.debug-actions {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.task-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.task-description {
+  color: #666;
+  font-style: italic;
+}
+
+.task-progress {
+  color: #888;
+  font-size: 0.9rem;
+}
