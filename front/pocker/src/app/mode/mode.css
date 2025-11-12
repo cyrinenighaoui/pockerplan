@@ -1,0 +1,123 @@
+.mode-root {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  font-family: Poppins, sans-serif;
+}
+
+.mode-bg {
+  z-index: -1;
+  object-fit: cover;
+  filter: brightness(0.75) blur(4px);
+}
+
+/* Glass card */
+.mode-card {
+  width: 460px;
+  padding: 30px;
+  text-align: center;
+  background: rgba(255,255,255,0.28);
+  backdrop-filter: blur(18px);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.35);
+  animation: fade .6s ease forwards;
+}
+
+.mode-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0a2b20;
+}
+.mode-sub {
+  font-size: 14px;
+  margin: 6px 0 18px;
+  color: rgba(0,0,0,0.65);
+}
+
+/* Game mode cards */
+.mode-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.mode-card-option {
+  padding: 16px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 16px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #083828;
+  transition: all .25s ease;
+  border: 2px solid transparent;
+}
+
+.mode-card-option:hover {
+  transform: scale(1.02);
+  background: rgba(255,255,255,0.85);
+}
+
+.mode-card-option.active {
+  background: rgba(255,255,255,1);
+  border-color: #064e3b;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Input & buttons */
+.mode-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,0.75);
+  outline: none;
+}
+
+.mode-btn, .mode-btn-primary {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 999px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.mode-btn {
+  background: rgba(255,255,255,0.85);
+}
+.mode-btn:hover {
+  background: white;
+}
+
+.mode-btn-primary {
+  background: linear-gradient(90deg, #0b513b, #0f6b4a);
+  color: white;
+}
+.mode-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* Logout link */
+.logout {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13px;
+  text-decoration: none;
+  color: #044930;
+}
+.logout:hover {
+  text-decoration: underline;
+}
+
+/* Fade animation */
+@keyframes fade {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
