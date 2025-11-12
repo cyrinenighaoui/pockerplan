@@ -66,10 +66,10 @@ jobs:
 
       - name: 📦 Install dependencies
         run: |
-          cd front
+          cd front/pocker
           npm install
 
       - name: 🏗️ Build Next.js app
         run: |
-          cd front
+          cd front/pocker
           npm run build || echo "⚠️ Build failed or skipped."
