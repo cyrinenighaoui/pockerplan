@@ -15,7 +15,7 @@
 
 /* Glass card */
 .mode-card {
-  width: 460px;
+  width: 600px;
   padding: 30px;
   text-align: center;
   background: rgba(255,255,255,0.28);
@@ -28,7 +28,7 @@
 .mode-title {
   font-size: 26px;
   font-weight: 700;
-  color: #0a2b20;
+  color: #07214d;
 }
 .mode-sub {
   font-size: 14px;
@@ -50,7 +50,7 @@
   border-radius: 16px;
   cursor: pointer;
   font-weight: 600;
-  color: #083828;
+  color: #1a6a83;
   transition: all .25s ease;
   border: 2px solid transparent;
 }
@@ -62,7 +62,7 @@
 
 .mode-card-option.active {
   background: rgba(255,255,255,1);
-  border-color: #064e3b;
+  border-color: #19486d;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
@@ -96,7 +96,7 @@
 }
 
 .mode-btn-primary {
-  background: linear-gradient(90deg, #0b513b, #0f6b4a);
+  background: linear-gradient(90deg, #0a5049, #1e285f);
   color: white;
 }
 .mode-btn-primary:hover {

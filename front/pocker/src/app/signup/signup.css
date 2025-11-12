@@ -15,7 +15,7 @@
   filter: brightness(0.76) blur(4px);
 }
 .signup-card {
-  width: 380px;
+  width: 600px;
   padding: 36px 42px;
   background: rgba(255,255,255,0.25);
   backdrop-filter: blur(18px) saturate(180%);
@@ -72,7 +72,7 @@
 }
 .switch a {
   font-weight: 600;
-  color: #064e3b;
+  color: #235369;
 }
 .switch a:hover {
   text-decoration: underline;

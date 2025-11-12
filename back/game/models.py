@@ -17,6 +17,8 @@ class Room(models.Model):
     backlog = models.JSONField(default=list)      # [{ id, title, description }]
     current_task_index = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    started = models.BooleanField(default=False)  # ✅ important
+
     def __str__(self):
         return f"Room {self.code} ({self.mode})"
 

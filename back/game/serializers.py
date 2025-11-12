@@ -9,7 +9,7 @@ class RoomCreateSerializer(serializers.ModelSerializer):
 class RoomDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields = ["code", "mode", "players", "backlog", "current_task_index", "created_at"]
+        fields = ["code", "mode", "players", "backlog", "current_task_index", "created_at","started"]
 class BacklogItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = BacklogItem

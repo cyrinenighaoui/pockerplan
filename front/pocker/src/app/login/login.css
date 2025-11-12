@@ -15,7 +15,7 @@
 }
 
 .login-card {
-  width: 380px;
+  width: 600px;
   padding: 36px 42px;
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(18px) saturate(180%);
@@ -77,11 +77,11 @@
 .switch {
   margin-top: 16px;
   font-size: 14px;
-  color: rgba(10,35,27,0.75);
+  color: rgba(12, 10, 35, 0.75);
 }
 .switch a {
   font-weight: 600;
-  color: #064e3b;
+  color: #235369;
   text-decoration: none;
 }
 .switch a:hover {

@@ -8,6 +8,28 @@ from django.shortcuts import get_object_or_404
 from .models import Room, Vote
 from .serializers import RoomCreateSerializer, RoomDetailSerializer
 import uuid
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def start_game(request, code):
+    try:
+        room = Room.objects.get(code=code.upper())
+        username = request.user.username
+        is_admin = any(
+            p.get("username") == username and p.get("role") == "admin"
+            for p in room.players
+        )
+        if not is_admin:
+            return Response({"error": "Only admin can start the game"}, status=403)
+
+        room.started = True
+        room.save()
+
+        return Response({"success": True, "started": True})
+    except Room.DoesNotExist:
+        return Response({"error": "Room not found"}, status=404)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
