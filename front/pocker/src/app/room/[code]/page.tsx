@@ -62,6 +62,11 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
       return () => clearInterval(interval);
     }
   }, [token, code]);
+  useEffect(() => {
+    if (room?.started) {
+      router.push(`/play/${code}`);
+    }
+  }, [room, code, router]);
 
   // 🚀 Lancer la partie (admin)
   const handleStart = async () => {
@@ -141,11 +146,6 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
 
   // ✅ Redirection si le jeu a déjà démarré
 // ✅ Redirection automatique si la partie a commencé
-useEffect(() => {
-  if (room?.started) {
-    router.push(`/play/${code}`);
-  }
-}, [room, code, router]);
 
 
   return (
@@ -160,6 +160,27 @@ useEffect(() => {
         </div>
 
         <p className="room-sub">Players currently connected:</p>
+        
+        {/* BACKLOG PREVIEW BEFORE STARTING */}
+        {room?.backlog?.length > 0 && (
+          <div className="backlog-preview">
+            <h3 className="backlog-title">📋 Features to estimate</h3>
+
+            <ul className="backlog-list">
+              {room.backlog.map((item: any, i: number) => (
+                <li key={i} className="backlog-item">
+                  <span className="index">{i + 1}.</span>
+                  <div>
+                    <div className="feature-title">{item.title}</div>
+                    {item.description && (
+                      <div className="feature-desc">{item.description}</div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="players-list">
           {players.map((p, i) => (
@@ -192,26 +213,6 @@ useEffect(() => {
               />
               <button className="btn primary" onClick={handleUpload} disabled={!uploadPreview}>
                 Upload to room
-              </button>
-              <button
-                className="btn ghost"
-                onClick={async () => {
-                  if (!token) return alert("You need to login");
-                  const res = await fetch(`${API_URL}/api/rooms/${code}/backlog/export/`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                  });
-                  const data = await res.json();
-                  const blob = new Blob([JSON.stringify(data, null, 2)], {
-                    type: "application/json",
-                  });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `${code}_backlog_export.json`;
-                  a.click();
-                }}
-              >
-                Download current 📥
               </button>
             </div>
 
@@ -249,6 +250,15 @@ useEffect(() => {
           >
             Copy code
           </button>
+          {isAdmin && (
+          <button
+            className="btn primary"
+            onClick={() => router.push(`/room/${code}/admin`)}
+          >
+            🛠 Admin Dashboard
+          </button>
+        )}
+
         </div>
       </section>
     </main>

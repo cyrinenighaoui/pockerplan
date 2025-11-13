@@ -1,96 +1,170 @@
+/* --- PAGE ROOT --- */
 .room-root {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
   position: relative;
   font-family: Poppins, sans-serif;
 }
+
 .room-bg {
   z-index: -1;
   object-fit: cover;
-  filter: brightness(0.75) blur(4px);
+  filter: brightness(0.6) blur(5px);
 }
 
-/* Glass card */
+/* --- MAIN CARD --- */
 .room-card {
-  width: min(860px, 92vw);
-  padding: 26px;
-  background: rgba(255,255,255,0.28);
-  backdrop-filter: blur(18px);
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,0.35);
-  animation: fade .6s ease forwards;
+  width: min(900px, 90vw);
+  background: rgba(255,255,255,0.22);
+  backdrop-filter: blur(16px);
+  padding: 32px;
+  border-radius: 26px;
+  border: 1px solid rgba(255,255,255,0.25);
+  animation: fade .5s ease forwards;
 }
 
+/* --- HEADER --- */
 .room-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
 }
+
 .room-header h2 {
   margin: 0;
-  color: #0a2b20;
+  font-size: 28px;
+  color: #063d2e;
+  font-weight: 800;
 }
+
 .badge {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.85);
+  background: #fff;
+  padding: 4px 10px;
+  border-radius: 10px;
   font-weight: 700;
   font-size: 13px;
 }
+
 .mode-tag {
+  background: linear-gradient(120deg, #0d5e43, #138d5d);
+  color: white;
+  padding: 7px 14px;
+  border-radius: 20px;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 1px;
-  color: white;
-  background: linear-gradient(90deg, #0b513b, #0f6b4a);
-  padding: 6px 10px;
-  border-radius: 999px;
 }
 
-.room-sub {
-  color: rgba(0,0,0,0.65);
-  margin: 6px 0 16px;
-}
-
-/* Players */
+/* --- PLAYERS GRID --- */
 .players-list {
+  margin-top: 12px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
 }
+
 .player {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 12px;
   background: rgba(255,255,255,0.75);
+  padding: 12px;
   border-radius: 16px;
-  padding: 10px 12px;
   border: 1px solid rgba(0,0,0,0.05);
+  transition: transform .15s;
 }
-.player.admin { border-color: rgba(6,78,59,0.35); }
+
+.player:hover {
+  transform: translateY(-3px);
+}
+
+.player.admin {
+  border-color: rgba(13, 94, 67, 0.5);
+}
+
+.current-user {
+  border-left: 4px solid #4caf50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  background: rgba(13, 94, 67, 0.12);
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: rgba(6,78,59,0.1);
-  color: #064e3b;
-  font-weight: 800;
+  font-weight: 700;
+  color: #0d5e43;
 }
-.meta .name { font-weight: 700; color: #0a2b20; }
-.meta .role { font-size: 12px; color: rgba(0,0,0,0.6); }
 
-/* Actions */
-.room-actions {
-  margin-top: 16px;
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
+/* --- BACKLOG PREVIEW CARD --- */
+.backlog-preview {
+  margin-top: 32px;
+  padding: 18px 20px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.4);
 }
+
+.backlog-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #063d2e;
+  margin-bottom: 12px;
+}
+
+.backlog-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.backlog-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.backlog-item:last-child {
+  border-bottom: none;
+}
+
+.index {
+  font-weight: 700;
+  font-size: 15px;
+  color: #4caf50;
+}
+
+.feature-title {
+  font-weight: 700;
+  color: #0a2d1f;
+}
+
+.feature-desc {
+  font-size: 13px;
+  opacity: 0.8;
+  margin-top: 3px;
+}
+
+/* --- UPLOAD & BUTTONS --- */
+.backlog-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.file-input {
+  background: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
 .btn {
   padding: 10px 14px;
   border-radius: 12px;
@@ -98,66 +172,34 @@
   font-weight: 700;
   cursor: pointer;
 }
-.btn.ghost {
-  background: rgba(255,255,255,0.9);
-}
+
 .btn.primary {
-  background: linear-gradient(90deg, #0b513b, #0f6b4a);
+  background: linear-gradient(120deg, #0d5e43, #14a06c);
   color: white;
-}
-
-@keyframes fade {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.backlog-block {
-  margin-top: 18px;
-  padding-top: 12px;
-  border-top: 1px dashed rgba(0,0,0,0.15);
-}
-
-.backlog-title {
-  font-weight: 800;
-  color: #0a2b20;
-  margin-bottom: 8px;
-}
-
-.backlog-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.file-input {
-  background: rgba(255,255,255,0.9);
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.08);
-}
-
-.backlog-msg {
-  margin-top: 8px;
-  color: #064e3b;
-  font-weight: 600;
-}
-
-.backlog-info {
-  margin-top: 6px;
-  color: rgba(0,0,0,0.7);
-}
-.current-user {
-  background-color: rgba(76, 175, 80, 0.15);
-  border-left: 4px solid #4caf50;
 }
 
 .btn.start {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
   background-color: #4caf50;
   color: white;
-  margin-top: 1rem;
+  font-size: 16px;
 }
 
 .btn.start:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.room-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* --- ANIMATION --- */
+@keyframes fade {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

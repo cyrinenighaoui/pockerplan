@@ -269,3 +269,61 @@ def export_results(request, code: str):
         "mode": room.mode,
         "results": room.backlog  # contient les estimates
     })
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def kick_player(request, code):
+    room = get_object_or_404(Room, code=code.upper())
+    username = request.user.username
+
+    # Vérifier si demandeur = admin
+    is_admin = any(
+        p.get("username") == username and p.get("role") == "admin"
+        for p in room.players
+    )
+    if not is_admin:
+        return Response({"error": "Only admin can kick players"}, status=403)
+
+    target = request.data.get("username")
+
+    if not target:
+        return Response({"error": "Username required"}, status=400)
+
+    # Ne pas kicker un admin
+    if any(p.get("username") == target and p.get("role") == "admin" for p in room.players):
+        return Response({"error": "Cannot kick an admin"}, status=403)
+
+    # Filtrer out le player
+    room.players = [p for p in room.players if p.get("username") != target]
+    room.save()
+
+    return Response({"status": "kicked", "username": target})
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def promote_player(request, code):
+    room = get_object_or_404(Room, code=code.upper())
+    username = request.user.username
+
+    # Vérifier admin
+    is_admin = any(
+        p.get("username") == username and p.get("role") == "admin"
+        for p in room.players
+    )
+    if not is_admin:
+        return Response({"error": "Only admin can promote players"}, status=403)
+
+    target = request.data.get("username")
+    if not target:
+        return Response({"error": "Username required"}, status=400)
+
+    # Mettre le role admin à la target
+    updated_players = []
+    for p in room.players:
+        if p.get("username") == target:
+            updated_players.append({ "username": target, "role": "admin" })
+        else:
+            updated_players.append(p)
+
+    room.players = updated_players
+    room.save()
+
+    return Response({"status": "promoted", "username": target})

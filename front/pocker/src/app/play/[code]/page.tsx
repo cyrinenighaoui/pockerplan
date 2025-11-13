@@ -33,6 +33,13 @@ export default function PlayPage({ params }: PlayPageProps) {
     setUsername(storedUsername);
     setLoading(false);
   }, []);
+  // ⛳ REDIRECTION AUTOMATIQUE LORSQUE TOUT EST TERMINÉ
+  useEffect(() => {
+    if (story?.done) {
+      console.log("🎉 Toutes les tâches sont terminées — redirection vers résultats");
+      window.location.href = `/results/${code}`;
+    }
+  }, [story, code]);
 
   // ✅ WebSocket connection
   useEffect(() => {
@@ -330,9 +337,8 @@ export default function PlayPage({ params }: PlayPageProps) {
   if (loading) return <p>Chargement...</p>;
   if (!token) return <p>Vous devez vous connecter.</p>;
   if (!story) return <p>Chargement de la tâche…</p>;
-  if (story.done) return <p>✅ Toutes les tâches sont terminées !</p>;
 
-  const currentVoters = Object.keys(votes).length;
+    const currentVoters = Object.keys(votes).length;
   const totalPlayers = players.length;
 
   return (
