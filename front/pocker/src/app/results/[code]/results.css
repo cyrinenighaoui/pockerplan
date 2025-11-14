@@ -1,0 +1,90 @@
+.results-root {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #dff3ea, #f7fffc);
+  font-family: Poppins, sans-serif;
+}
+
+.results-card {
+  width: min(900px, 92vw);
+  background: white;
+  padding: 32px;
+  border-radius: 22px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  animation: fade .6s ease forwards;
+}
+
+h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #0b513b;
+}
+
+.room-info {
+  color: #555;
+  margin: 6px 0 22px;
+  font-size: 15px;
+}
+
+.results-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.result-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.item-index {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0b513b;
+}
+
+.item-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0a2b20;
+}
+
+.item-desc {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.item-estimate {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #07663e;
+}
+
+.item-estimate.pending {
+  color: #999;
+}
+
+.btn-export {
+  margin-top: 22px;
+  padding: 12px 18px;
+  background: #0f6b4a;
+  color: white;
+  border-radius: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+@keyframes fade {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

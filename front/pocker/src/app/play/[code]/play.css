@@ -1,3 +1,5 @@
+/* play.css */
+
 :root {
   --bg-glass: rgba(255, 255, 255, 0.11);
   --glass-border: rgba(255, 255, 255, 0.25);
@@ -8,29 +10,27 @@
   --green: #0db67b;
   --deep: #0b442e;
   --glass: rgba(255,255,255,.12);
+  --chat-width: 320px;
 }
 
-.play-root {
+/* Layout principal */
+.play-layout {
   min-height: 100vh;
-  height: 100vh; /* ✅ Force la hauteur à 100% de la vue */
+  height: 100vh;
   width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center; /* ✅ Centre verticalement */
-  padding: 20px 16px;
   backdrop-filter: blur(8px);
   background-image: url('/img1.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
-  overflow: hidden; /* ✅ Empêche le scroll */
+  overflow: hidden;
   box-sizing: border-box;
 }
 
-/* Overlay sombre pour améliorer la lisibilité */
-.play-root::before {
+/* Overlay sombre */
+.play-layout::before {
   content: '';
   position: absolute;
   top: 0;
@@ -41,50 +41,206 @@
   z-index: -1;
 }
 
-/* Container principal avec scroll interne si nécessaire */
-.content-container {
+/* Panneau gauche (contenu principal) */
+.left-panel {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-height: 90vh; /* ✅ Limite la hauteur maximale */
-  overflow-y: auto; /* ✅ Scroll interne si vraiment nécessaire */
-  padding: 10px 0;
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 100vh;
 }
 
-h2 {
+/* Panneau droit (chat) */
+.right-panel {
+  width: var(--chat-width);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Container du chat */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+
+/* En-tête du chat */
+.chat-header {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 15px 20px;
+  font-weight: 700;
+  color: white;
+  font-size: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+}
+
+/* Messages du chat */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-message {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.chat-message strong {
+  color: #0db67b;
+  font-weight: 600;
+}
+
+/* Input du chat */
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-input-row input {
+  flex: 1;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  font-family: inherit;
+  font-size: 14px;
+  color: #333;
+}
+
+.chat-input-row input:focus {
+  outline: none;
+  border-color: #0db67b;
+  background: white;
+}
+
+.chat-input-row button {
+  background: #0db67b;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.chat-input-row button:hover {
+  background: #0ca46a;
+  transform: translateY(-1px);
+}
+
+/* Styles pour le contenu principal */
+.task-header {
+  text-align: center;
+  margin-bottom: 20px;
+  max-width: 600px;
+}
+
+.task-header h2 {
   color: white;
   font-family: Poppins, sans-serif;
-  font-size: 28px; /* ✅ Légèrement réduit */
+  font-size: 28px;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   text-shadow: var(--shadow-green);
 }
 
-p {
-  max-width: 600px;
-  text-align: center;
-  color: white;
+.task-description {
+  color: #fff;
   opacity: 0.9;
+  font-style: italic;
+  font-size: 14px;
   line-height: 1.4;
-  margin-bottom: 15px; /* ✅ Réduit */
-  font-size: 14px; /* ✅ Légèrement plus petit */
+  margin-bottom: 8px;
 }
 
-/* Cards layout compact */
+.task-progress {
+  color: #fff;
+  opacity: 0.8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Statut de vote */
+.vote-status {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.all-voted-message, .waiting-message {
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-weight: 500;
+}
+
+.all-voted-message {
+  background: rgba(13, 182, 123, 0.3);
+  border: 1px solid rgba(13, 182, 123, 0.5);
+}
+
+/* Liste des joueurs */
+.presence-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 15px 0 20px;
+  justify-content: center;
+  max-width: 90%;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #fff;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.chip.voted {
+  background: rgba(13, 182, 123, 0.3);
+  border-color: rgba(13, 182, 123, 0.5);
+}
+
+/* Grille des cartes */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(5, 90px); /* ✅ Cartes plus petites */
-  gap: 8px; /* ✅ Espacement réduit */
-  margin: 10px 0 15px;
+  grid-template-columns: repeat(5, 90px);
+  gap: 10px;
+  margin: 20px 0 25px;
 }
 
-/* Cartes plus compactes */
 .card3d {
-  width: 90px; /* ✅ Réduit */
-  height: 130px; /* ✅ Réduit */
+  width: 90px;
+  height: 130px;
   perspective: 800px;
   cursor: pointer;
 }
@@ -93,7 +249,7 @@ p {
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform .6s;
+  transition: transform 0.6s ease;
   transform-style: preserve-3d;
 }
 
@@ -102,7 +258,16 @@ p {
 }
 
 .card3d.selected .card3d-inner {
-  transform: rotateY(180deg) scale(1.03);
+  transform: rotateY(180deg) scale(1.05);
+}
+
+.card3d.locked {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.card3d.locked:hover .card3d-inner {
+  transform: none;
 }
 
 .card3d-front, .card3d-back {
@@ -111,145 +276,192 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px; /* ✅ Légèrement réduit */
+  border-radius: 14px;
   border: 2px solid var(--glass-border);
   background: var(--glass);
   box-shadow: 0 0 10px rgba(0,0,0,.15), inset 0 0 24px rgba(255,255,255,.06);
   backface-visibility: hidden;
   font-weight: 900;
-  font-size: 24px; /* ✅ Réduit */
+  font-size: 24px;
 }
 
 .card3d-back {
   transform: rotateY(180deg);
-  font-size: 20px; /* ✅ Réduit */
+  font-size: 20px;
   color: #e5e7eb;
+  background: linear-gradient(135deg, #0db67b, #0ca46a);
 }
 
-/* Boutons plus compacts */
+/* Boutons */
 .submit-btn {
-  margin-top: 12px;
+  margin-top: 15px;
   background: var(--green);
-  color: #053022;
-  padding: 10px 25px; /* ✅ Réduit */
-  font-size: 16px; /* ✅ Réduit */
+  color: white;
+  padding: 12px 30px;
+  font-size: 16px;
   border-radius: 30px;
   border: none;
   font-weight: 700;
   cursor: pointer;
-  transition: transform .15s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(13, 182, 123, 0.3);
 }
 
-.submit-btn:hover {
+.submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13, 182, 123, 0.4);
 }
 
-/* Section joueurs compacte */
-.presence-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px; /* ✅ Réduit */
-  margin: 8px 0 12px;
-  justify-content: center;
-  max-width: 90%;
-}
-
-.chip {
-  background: rgba(255,255,255,.15);
-  border: 1px solid rgba(255,255,255,.3);
-  padding: 6px 10px; /* ✅ Réduit */
-  border-radius: 999px;
-  font-weight: 600;
-  color: #fff;
-  font-size: 12px; /* ✅ Réduit */
-}
-
-/* Status de vote compact */
-.vote-status {
-  margin: 8px 0;
-  text-align: center;
-}
-
-.all-voted-message, .waiting-message {
-  font-size: 14px; /* ✅ Réduit */
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: rgba(255,255,255,.1);
-}
-
-/* Section admin compacte */
-.admin-section {
-  margin-top: 10px;
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .reveal-btn {
-  padding: 10px 20px; /* ✅ Réduit */
-  font-size: 14px; /* ✅ Réduit */
+  margin-top: 15px;
+  background: linear-gradient(135deg, #ff6b6b, #ff5252);
+  color: white;
+  padding: 12px 25px;
+  font-size: 14px;
   border-radius: 12px;
   border: none;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* Header de tâche compact */
-.task-header {
-  text-align: center;
-  margin-bottom: 15px; /* ✅ Réduit */
+.reveal-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
 }
 
-.task-description {
-  color: #fff;
-  opacity: 0.9;
-  font-style: italic;
-  font-size: 14px; /* ✅ Réduit */
+.reveal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  background: #666;
 }
 
-.task-progress {
-  color: #fff;
-  opacity: 0.8;
-  font-size: 12px; /* ✅ Réduit */
+/* Scrollbar personnalisée */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* Assurer que le contenu soit au-dessus de l'overlay */
-.play-root > * {
-  position: relative;
-  z-index: 1;
+.chat-messages::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
 }
 
-/* Pour les très petits écrans */
-@media (max-height: 700px) {
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .play-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .left-panel {
+    order: 1;
+    max-height: none;
+    padding: 20px 15px;
+  }
+  
+  .right-panel {
+    order: 2;
+    width: 100%;
+    height: 300px;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
   .cards-grid {
     grid-template-columns: repeat(5, 80px);
-    gap: 6px;
+    gap: 8px;
   }
   
   .card3d {
     width: 80px;
-    height: 110px;
-  }
-  
-  .card3d-front, .card3d-back {
-    font-size: 20px;
-  }
-  
-  h2 {
-    font-size: 24px;
-    margin-bottom: 4px;
-  }
-  
-  p {
-    margin-bottom: 10px;
-    font-size: 13px;
+    height: 120px;
   }
 }
 
-/* Éviter le scroll sur mobile */
 @media (max-width: 768px) {
-  .play-root {
-    padding: 15px 10px;
+  .cards-grid {
+    grid-template-columns: repeat(3, 80px);
   }
   
-  .cards-grid {
-    grid-template-columns: repeat(3, 80px); /* ✅ Moins de colonnes sur mobile */
+  .task-header h2 {
+    font-size: 24px;
   }
+  
+  .presence-row {
+    max-width: 100%;
+  }
+  
+  .chat-input-row {
+    padding: 10px;
+  }
+  
+  .chat-input-row input {
+    padding: 10px 12px;
+  }
+  
+  .chat-input-row button {
+    padding: 10px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 80px);
+  }
+  
+  .task-header h2 {
+    font-size: 20px;
+  }
+  
+  .submit-btn, .reveal-btn {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* Animation pour les nouveaux messages */
+@keyframes messageSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-message {
+  animation: messageSlide 0.3s ease;
+}
+
+/* État de connexion */
+.connection-status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 82, 82, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 1000;
 }

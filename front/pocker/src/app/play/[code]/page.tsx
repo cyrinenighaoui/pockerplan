@@ -25,7 +25,17 @@ export default function PlayPage({ params }: PlayPageProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const ws = useRef<WebSocket | null>(null);
 
-  // ✅ Charger token & username
+  // --- CHAT STATE ---
+  const [messages, setMessages] = useState<{ user: string, msg: string }[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // ✅ Scroll vers le bas quand de nouveaux messages arrivent
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // ✅ Charger token & username - UNIQUEMENT au début
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUsername = localStorage.getItem("username");
@@ -33,6 +43,7 @@ export default function PlayPage({ params }: PlayPageProps) {
     setUsername(storedUsername);
     setLoading(false);
   }, []);
+
   // ⛳ REDIRECTION AUTOMATIQUE LORSQUE TOUT EST TERMINÉ
   useEffect(() => {
     if (story?.done) {
@@ -41,25 +52,30 @@ export default function PlayPage({ params }: PlayPageProps) {
     }
   }, [story, code]);
 
-  // ✅ WebSocket connection
+  // ✅ WebSocket connection - CORRIGÉ avec moins de dépendances
   useEffect(() => {
-    if (!code || !username) return;
+    if (!code || !username || loading) return;
 
     let reconnectTimeout: NodeJS.Timeout;
+    let isMounted = true;
 
     const connectWebSocket = () => {
-      if (ws.current?.readyState === WebSocket.OPEN) {
+      if (ws.current?.readyState === WebSocket.OPEN || !isMounted) {
         return;
       }
 
+      console.log("🔄 Connecting WebSocket...");
       ws.current = new WebSocket(`ws://localhost:8000/ws/rooms/${code}/?username=${username}`);
 
       ws.current.onopen = () => {
+        if (!isMounted) return;
         console.log("✅ WebSocket connected as", username);
         setIsConnected(true);
       };
 
       ws.current.onmessage = (event) => {
+        if (!isMounted) return;
+        
         try {
           const data = JSON.parse(event.data);
           console.log("📨 WebSocket message:", data);
@@ -84,18 +100,35 @@ export default function PlayPage({ params }: PlayPageProps) {
             console.error("Server error:", data.message);
             alert(`Erreur: ${data.message}`);
           }
+        // Dans votre useEffect WebSocket, ajoutez ce cas :
+        else if (data.type === "chat") {
+          console.log("💬 Chat message received:", data);
+          console.log("📝 Current messages before:", messages);
+          setMessages(prev => {
+            const newMessages = [...prev, { user: data.username, msg: data.message }];
+            console.log("📝 Current messages after:", newMessages);
+            return newMessages;
+          });
+        }
+
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);
         }
       };
 
       ws.current.onclose = (event) => {
+        if (!isMounted) return;
         console.log("❌ WebSocket disconnected:", event.code, event.reason);
         setIsConnected(false);
-        reconnectTimeout = setTimeout(connectWebSocket, 3000);
+        
+        // Reconnexion seulement si ce n'est pas une déconnexion normale
+        if (event.code !== 1000) {
+          reconnectTimeout = setTimeout(connectWebSocket, 3000);
+        }
       };
 
       ws.current.onerror = (error) => {
+        if (!isMounted) return;
         console.error("WebSocket error:", error);
         setIsConnected(false);
       };
@@ -107,16 +140,14 @@ export default function PlayPage({ params }: PlayPageProps) {
       if (data.status === "validated") {
         alert(`🃏 Résultat: ${data.result}`);
         
-        // FORCER le rechargement complet après un délai
         setTimeout(async () => {
           console.log("🔄 Reloading data after reveal...");
-          await loadStory(); // Recharger la tâche actuelle
-          await loadRoomData(); // Recharger les données de la room
-          await checkMyVoteStatus(); // Vérifier le statut de vote
-          await loadVotes(); // Recharger les votes
+          await loadStory();
+          await loadRoomData();
+          await checkMyVoteStatus();
+          await loadVotes();
         }, 1000);
         
-        // Reset immédiat de l'interface
         setSelectedCard(null);
         setVotes({});
         setAllVoted(false);
@@ -146,19 +177,19 @@ export default function PlayPage({ params }: PlayPageProps) {
     const handleSnapshot = (data: any) => {
       console.log("📸 Handling snapshot:", data);
       setStory(data);
-      // Vérifier le statut de vote pour la nouvelle tâche
       setTimeout(() => checkMyVoteStatus(), 1000);
     };
 
     connectWebSocket();
 
     return () => {
+      isMounted = false;
       clearTimeout(reconnectTimeout);
       if (ws.current) {
         ws.current.close(1000, "Component unmount");
       }
     };
-  }, [code, username]);
+  }, [code, username, loading]); // ✅ Moins de dépendances
 
   // ✅ Vérifier si j'ai déjà voté
   const checkMyVoteStatus = async () => {
@@ -181,14 +212,14 @@ export default function PlayPage({ params }: PlayPageProps) {
     }
   };
 
-  // ✅ Charger la tâche actuelle - AMÉLIORÉ
+  // ✅ Charger la tâche actuelle
   const loadStory = async () => {
     if (!token) return;
     try {
       console.log("🔄 Loading current story...");
       const res = await fetch(`${API_URL}/api/rooms/${code}/current/`, {
         headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-cache' // Empêcher le cache
+        cache: 'no-cache'
       });
       
       if (res.ok) {
@@ -196,7 +227,6 @@ export default function PlayPage({ params }: PlayPageProps) {
         console.log("📖 Story loaded:", storyData);
         setStory(storyData);
         
-        // Si c'est une nouvelle tâche, reset les votes
         if (storyData.current && (!story || story.current?.title !== storyData.current?.title)) {
           console.log("🆕 New task detected, resetting votes");
           setVotes({});
@@ -245,6 +275,30 @@ export default function PlayPage({ params }: PlayPageProps) {
     }
   };
 
+  // ✅ Envoi du message chat - CORRIGÉ
+// ✅ Envoi du message chat - CORRIGÉ
+const sendMessage = () => {
+  if (!chatInput.trim()) return;
+  
+  console.log("💬 Sending chat message:", chatInput);
+  
+  // Ajouter le message localement immédiatement
+  const newMessage = { user: username || "Moi", msg: chatInput };
+  setMessages(prev => [...prev, newMessage]);
+  
+  // Envoyer via WebSocket - CORRECTION: utiliser "chat" au lieu de "chat_message"
+  if (ws.current?.readyState === WebSocket.OPEN) {
+    ws.current.send(JSON.stringify({
+      type: "chat", // ⬅️ CHANGEMENT ICI
+      username: username,
+      message: chatInput
+    }));
+  } else {
+    console.error("WebSocket not connected");
+  }
+  
+  setChatInput("");
+};
   // ✅ Envoi du vote
   const sendVote = async () => {
     if (!selectedCard || !token || !username) return alert("Choisissez une carte !");
@@ -271,7 +325,6 @@ export default function PlayPage({ params }: PlayPageProps) {
         
         console.log("✅ Vote envoyé !");
         
-        // Recharger pour synchronisation
         setTimeout(() => {
           loadVotes();
           loadRoomData();
@@ -309,7 +362,6 @@ export default function PlayPage({ params }: PlayPageProps) {
     
     loadInitialData();
     
-    // Intervalle pour les mises à jour
     const interval = setInterval(() => {
       loadVotes();
     }, 2000);
@@ -325,109 +377,113 @@ export default function PlayPage({ params }: PlayPageProps) {
       isAdmin,
       playersCount: players.length,
       votesCount: Object.keys(votes).length,
+      messagesCount: messages.length,
       story: story ? {
         done: story.done,
         current: story.current?.title || 'none',
         index: story.index
       } : 'null'
     });
-  }, [allVoted, hasVoted, isAdmin, players, votes, story]);
+  }, [allVoted, hasVoted, isAdmin, players, votes, messages, story]);
 
-  // ✅ UI rendering - AMÉLIORÉ avec meilleur feedback
+  // ✅ UI rendering
   if (loading) return <p>Chargement...</p>;
   if (!token) return <p>Vous devez vous connecter.</p>;
   if (!story) return <p>Chargement de la tâche…</p>;
 
-    const currentVoters = Object.keys(votes).length;
+  const currentVoters = Object.keys(votes).length;
   const totalPlayers = players.length;
 
   return (
-    <main className="play-root">
-      {/* En-tête avec titre de la tâche */}
-      <div className="task-header">
-        <h2>{story.current?.title || "Chargement de la tâche..."}</h2>
-        <p className="task-description">{story.current?.description || ""}</p>
-        {story.index && (
-          <p className="task-progress">Tâche {story.index} sur {story.total}</p>
-        )}
-      </div>
+    <div className="play-layout">
+      {/* LEFT SIDE */}
+      <div className="left-panel">
+        {/* En-tête */}
+        <div className="task-header">
+          <h2>{story.current?.title}</h2>
+          <p className="task-description">{story.current?.description}</p>
+          {story.index && (
+            <p className="task-progress">
+              Tâche {story.index} sur {story.total}
+            </p>
+          )}
+        </div>
 
-      {/* Indicateur de statut de vote */}
-      <div className={`vote-status ${allVoted ? 'all-voted' : 'waiting'}`}>
-        {allVoted ? (
-          <div className="all-voted-message">✅ Tous les joueurs ont voté !</div>
-        ) : (
-          <div className="waiting-message">
-            ⏳ En attente des votes... ({currentVoters}/{totalPlayers})
-          </div>
-        )}
-      </div>
-
-      {/* Liste des joueurs */}
-      <div className="presence-row">
-        {players.map((p, i) => {
-          const playerHasVoted = votes[p.username] !== undefined;
-          return (
-            <div key={i} className={`chip ${playerHasVoted ? 'voted' : 'waiting'}`}>
-              {p.username} 
-              {playerHasVoted ? " ✅" : " ⌛"}
-              {p.role === 'admin' && ' 👑'}
+        {/* Statut de vote */}
+        <div className={`vote-status ${allVoted ? 'all-voted' : 'waiting'}`}>
+          {allVoted ? (
+            <div className="all-voted-message">✅ Tous les joueurs ont voté !</div>
+          ) : (
+            <div className="waiting-message">
+              ⏳ En attente des votes... ({currentVoters}/{totalPlayers})
             </div>
-          );
-        })}
-      </div>
+          )}
+        </div>
 
-      {/* Cartes de vote */}
-      <div className="cards-grid">
-        {CARDS.map((c) => {
-          const isSelected = selectedCard === c;
-          return (
+        {/* Joueurs */}
+        <div className="presence-row">
+          {players.map((p, i) => (
+            <div key={i} className={`chip ${votes[p.username] ? 'voted' : 'waiting'}`}>
+              {p.username} {votes[p.username] ? "✅" : "⌛"} {p.role === "admin" && "👑"}
+            </div>
+          ))}
+        </div>
+
+        {/* Cartes */}
+        <div className="cards-grid">
+          {CARDS.map((c) => (
             <div
               key={c}
-              className={`card3d ${isSelected ? "selected" : ""} ${hasVoted ? "locked" : ""}`}
+              className={`card3d ${selectedCard === c ? "selected" : ""} ${hasVoted ? "locked" : ""}`}
               onClick={() => !hasVoted && setSelectedCard(c)}
             >
               <div className="card3d-inner">
-                <div className="card3d-front">
-                  {c === "coffee" ? "☕" : c}
-                </div>
-                <div className="card3d-back">
-                  {isSelected && hasVoted ? "✓" : ""}
-                </div>
+                <div className="card3d-front">{c === "coffee" ? "☕" : c}</div>
+                <div className="card3d-back">{selectedCard === c && hasVoted && "✓"}</div>
               </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Vote button */}
+        <button className="submit-btn" onClick={sendVote} disabled={!selectedCard || hasVoted}>
+          {hasVoted ? "Vote Envoyé ✅" : selectedCard ? `Voter ${selectedCard} 🎯` : "Choisir une carte"}
+        </button>
+
+        {/* Reveal Button */}
+        {isAdmin && (
+          <button className="reveal-btn" disabled={!allVoted} onClick={sendReveal}>
+            Révéler les votes 👀
+          </button>
+        )}
       </div>
 
-      {/* Bouton de vote */}
-      <button 
-        className="submit-btn" 
-        onClick={sendVote} 
-        disabled={!selectedCard || hasVoted}
-      >
-        {hasVoted ? "Vote Envoyé ✅" : selectedCard ? `Voter ${selectedCard} 🎯` : "Choisir une carte"}
-      </button>
-
-      {/* Bouton Reveal pour admin */}
-      {isAdmin && (
-        <div className="admin-section">
-          <button
-            className={`reveal-btn ${allVoted ? 'active' : 'disabled'}`}
-            onClick={sendReveal}
-            disabled={!allVoted}
-          >
-            {allVoted ? "Révéler les Votes 👀" : `En attente (${currentVoters}/${totalPlayers})`}
-          </button>
+      {/* RIGHT SIDE - CHAT */}
+      <div className="right-panel">
+        <div className="chat-container">
+          <div className="chat-header">💬 Discussion {!isConnected && "(Déconnecté)"}</div>
+          <div className="chat-messages">
+            {messages.map((m, i) => (
+              <div key={i} className="chat-message">
+                <strong>{m.user}: </strong> {m.msg}
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+          <div className="chat-input-row">
+            <input
+              placeholder="Écrire un message..."
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+              disabled={!isConnected}
+            />
+            <button onClick={sendMessage} disabled={!isConnected || !chatInput.trim()}>
+              Envoyer
+            </button>
+          </div>
         </div>
-      )}
-
-      {/* Statut de connexion */}
-      {!isConnected && (
-        <div className="connection-status">
-          🔴 Déconnecté - Reconnexion...
-        </div>
-      )}
-    </main>
+      </div>
+    </div>
   );
 }
