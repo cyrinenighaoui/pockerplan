@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -153,3 +154,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# settings.py
+
+# 1. Enlève ta clé du code
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')  # Juste ça, pas de clé en dur !
+
+# 3. Dans .gitignore, assure-toi d'avoir :

@@ -40,6 +40,21 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             # Broadcast "voted" progress
             counts = await self.vote_counts()
             await self.group_send("voted", counts)
+            
+            # ✅ CORRECTION : Envoi direct de l'analyse IA pour TEST
+            print(f"🎯 [IA DEBUG] Vote reçu - {counts['voters']}/{counts['total']} votes")
+            
+            if counts["voters"] >= counts["total"]:
+                print("🎯 [IA] Tous ont voté - envoi de l'analyse TEST...")
+                
+                # Envoi direct SANS appel API (pour tester)
+                await self.channel_layer.group_send(self.group, {
+                    "type": "ai_analysis_event",
+                    "analysis": "🤖 ANALYSE IA : Divergence détectée ! Certains voient des complexités API cachées. Estimation recommandée : 8 points.",
+                    "vote_summary": {"5": 2, "8": 1, "13": 2},  # Données exemple
+                    "total_votes": counts["voters"],
+                    "required_votes": counts["total"]
+                })
 
         elif t == "reveal":
             # Only admin allowed
@@ -61,10 +76,9 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 **payload
             })
 
-        # ✅ AJOUT: Gestion du chat
+        # ✅ Gestion du chat
         elif t == "chat":
             print(f"💬 Chat message from {self.username}: {content.get('message')}")
-            # Broadcast le message à tout le groupe
             await self.channel_layer.group_send(self.group, {
                 "type": "chat_event",
                 "username": self.username,
@@ -87,16 +101,25 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
     async def reveal_event(self, event):
         await self.send_json({"type": "reveal", **event})
 
-    # ✅ AJOUT: Handler pour les messages chat
     async def chat_event(self, event):
-        print(f"📨 Broadcasting chat: {event['username']}: {event['message']}")
         await self.send_json({
             "type": "chat",
             "username": event["username"],
             "message": event["message"]
         })
 
-    # ---------- DB helpers (garder les existants) ----------
+    # ✅ AJOUT : Handler pour l'analyse IA
+    async def ai_analysis_event(self, event):
+        print("🤖 [IA] Envoi de l'analyse au frontend...")
+        await self.send_json({
+            "type": "ai_analysis",
+            "analysis": event["analysis"],
+            "vote_summary": event.get("vote_summary", {}),
+            "total_votes": event.get("total_votes", 0),
+            "required_votes": event.get("required_votes", 0)
+        })
+
+    # ---------- DB helpers ----------
     @database_sync_to_async
     def get_room(self):
         return get_object_or_404(Room, code=self.code)

@@ -29,6 +29,14 @@ export default function PlayPage({ params }: PlayPageProps) {
   const [messages, setMessages] = useState<{ user: string, msg: string }[]>([]);
   const [chatInput, setChatInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+// AJOUTER dans ton state existant
+const [aiAnalysis, setAiAnalysis] = useState<{
+  analysis: string;
+  vote_summary: any;
+  total_votes: number;
+  required_votes: number;
+} | null>(null);
+
 
   // ✅ Scroll vers le bas quand de nouveaux messages arrivent
   useEffect(() => {
@@ -100,6 +108,17 @@ export default function PlayPage({ params }: PlayPageProps) {
             console.error("Server error:", data.message);
             alert(`Erreur: ${data.message}`);
           }
+          // AJOUTER dans ton useEffect WebSocket - dans onmessage
+            else if (data.type === "ai_analysis") {
+              console.log("🤖 AI Analysis received:", data);
+              setAiAnalysis(data);
+              
+              // Effet wow : afficher pendant 8 secondes puis disparaître
+              setTimeout(() => {
+                setAiAnalysis(null);
+              }, 8000);
+            }
+
         // Dans votre useEffect WebSocket, ajoutez ce cas :
         else if (data.type === "chat") {
           console.log("💬 Chat message received:", data);
@@ -276,17 +295,12 @@ export default function PlayPage({ params }: PlayPageProps) {
   };
 
   // ✅ Envoi du message chat - CORRIGÉ
-// ✅ Envoi du message chat - CORRIGÉ
-// ✅ Envoi du message chat - CORRIGÉ (sans duplication)
 const sendMessage = () => {
   if (!chatInput.trim()) return;
   
   console.log("💬 Sending chat message:", chatInput);
   
-  // ⛔ SUPPRIMER l'ajout local immédiat
-  // const newMessage = { user: username || "Moi", msg: chatInput };
-  // setMessages(prev => [...prev, newMessage]);
-  
+ 
   // Envoyer via WebSocket seulement
   if (ws.current?.readyState === WebSocket.OPEN) {
     ws.current.send(JSON.stringify({
@@ -422,6 +436,20 @@ const sendMessage = () => {
             </div>
           )}
         </div>
+        {aiAnalysis && (
+                <div className="ai-analysis wow-effect">
+                  <div className="ai-header">
+                    <span className="ai-icon">🤖</span>
+                    <strong>Analyse IA</strong>
+                  </div>
+                  <div className="ai-message">{aiAnalysis.analysis}</div>
+                  <div className="ai-stats">
+                    Votes: {Object.entries(aiAnalysis.vote_summary).map(([value, count]: [string, unknown]) => (
+                      <span key={value} className="vote-tag">{value}: {String(count)}</span>
+                    ))}
+                  </div>
+                </div>
+      )}
 
         {/* Joueurs */}
         <div className="presence-row">

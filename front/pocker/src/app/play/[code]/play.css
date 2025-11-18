@@ -464,4 +464,77 @@
   font-size: 12px;
   font-weight: 600;
   z-index: 1000;
+}/* Effet WOW pour l'analyse IA */
+.ai-analysis {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin: 15px 0;
+  animation: slideInUp 0.5s ease-out, glow 2s infinite alternate;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 1.1em;
+}
+
+.ai-icon {
+  font-size: 1.3em;
+  animation: bounce 2s infinite;
+}
+
+.ai-message {
+  font-size: 0.95em;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.ai-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.85em;
+}
+
+.vote-tag {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+  to {
+    box-shadow: 0 4px 25px rgba(102, 126, 234, 0.8);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
