@@ -12,12 +12,10 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         qs = parse_qs(self.scope["query_string"].decode())
         self.username = (qs.get("username", ["anonymous"])[0] or "anonymous")
 
-        # (Optional) You can verify JWT here if you pass ?token=...
-        # For local class demo, we accept and rely on REST auth for protected actions.
         await self.channel_layer.group_add(self.group, self.channel_name)
         await self.accept()
 
-        # Mark presence ON (frontend keeps an online set)
+        # Mark presence ON
         await self.group_send("presence", {"username": self.username, "online": True})
 
         # Send current task + simple counts on connect
@@ -39,29 +37,38 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         if t == "vote":
             value = content.get("value")
             await self.save_vote(self.username, value)
-            # Broadcast “voted” progress (counts only, votes hidden)
+            # Broadcast "voted" progress
             counts = await self.vote_counts()
             await self.group_send("voted", counts)
 
         elif t == "reveal":
-            # Only admin allowed (check)
+            # Only admin allowed
             if not await self.is_admin(self.username):
                 await self.send_json({"type": "error", "message": "Only admin can reveal"})
                 return
 
             res = await self.reveal_logic()
-            # Broadcast result and next task (or done)
             await self.channel_layer.group_send(self.group, {
                 "type": "reveal_event",
                 **res
             })
 
-        elif t == "start":  # optional, to push current task to everyone
+        elif t == "start":
             room = await self.get_room()
             payload = await self.current_payload(room)
             await self.channel_layer.group_send(self.group, {
                 "type": "push_snapshot",
                 **payload
+            })
+
+        # ✅ AJOUT: Gestion du chat
+        elif t == "chat":
+            print(f"💬 Chat message from {self.username}: {content.get('message')}")
+            # Broadcast le message à tout le groupe
+            await self.channel_layer.group_send(self.group, {
+                "type": "chat_event",
+                "username": self.username,
+                "message": content.get("message")
             })
 
     # ---------- Group send wrappers ----------
@@ -80,8 +87,16 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
     async def reveal_event(self, event):
         await self.send_json({"type": "reveal", **event})
 
+    # ✅ AJOUT: Handler pour les messages chat
+    async def chat_event(self, event):
+        print(f"📨 Broadcasting chat: {event['username']}: {event['message']}")
+        await self.send_json({
+            "type": "chat",
+            "username": event["username"],
+            "message": event["message"]
+        })
 
-    # ---------- DB helpers ----------
+    # ---------- DB helpers (garder les existants) ----------
     @database_sync_to_async
     def get_room(self):
         return get_object_or_404(Room, code=self.code)
@@ -101,7 +116,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             "done": False,
             "current": backlog[idx],
             "total": len(backlog),
-            "index": idx + 1   # 1-based for UI
+            "index": idx + 1
         }
 
     @database_sync_to_async
@@ -133,7 +148,6 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 
         values = [v.value for v in votes if v.value != "coffee"]
         if len(values) == 0:
-            # all coffee: keep progress, just signal pause
             return {"status": "coffee"}
 
         if room.mode == "strict":
@@ -146,61 +160,18 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             elif room.mode == "median":
                 from statistics import median
                 result = str(int(median(nums)))
-            else:  # majority
+            else:
                 result = max(set(values), key=values.count)
 
         if result is None:
-            # revote
             Vote.objects.filter(room=room, task_index=idx).delete()
             return {"status": "revote"}
 
-        # Apply result, advance
         room.backlog[idx]["estimate"] = result
         room.current_task_index += 1
         room.save()
         Vote.objects.filter(room=room, task_index=idx).delete()
 
-        # Next snapshot
         done = room.current_task_index >= len(room.backlog)
         next_item = None if done else room.backlog[room.current_task_index]
         return {"status": "validated", "result": result, "done": done, "next": next_item}
-
-import json
-from channels.generic.websocket import AsyncWebsocketConsumer
-
-class GameConsumer(AsyncWebsocketConsumer):
-
-    async def connect(self):
-        self.room_code = self.scope["url_route"]["kwargs"]["code"]
-        self.room_group_name = f"room_{self.room_code}"
-
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-
-    async def receive(self, text_data):
-        data = json.loads(text_data)
-
-        # LOG
-        print("<< RECV:", data)
-
-        if data.get("type") == "chat":
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "chat_event",
-                    "username": data["username"],
-                    "message": data["message"]
-                }
-            )
-
-    async def chat_event(self, event):
-        print(">> broadcast:", event)
-
-        await self.send(text_data=json.dumps({
-            "type": "chat",
-            "username": event["username"],
-            "message": event["message"]
-        }))

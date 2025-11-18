@@ -277,24 +277,27 @@ export default function PlayPage({ params }: PlayPageProps) {
 
   // ✅ Envoi du message chat - CORRIGÉ
 // ✅ Envoi du message chat - CORRIGÉ
+// ✅ Envoi du message chat - CORRIGÉ (sans duplication)
 const sendMessage = () => {
   if (!chatInput.trim()) return;
   
   console.log("💬 Sending chat message:", chatInput);
   
-  // Ajouter le message localement immédiatement
-  const newMessage = { user: username || "Moi", msg: chatInput };
-  setMessages(prev => [...prev, newMessage]);
+  // ⛔ SUPPRIMER l'ajout local immédiat
+  // const newMessage = { user: username || "Moi", msg: chatInput };
+  // setMessages(prev => [...prev, newMessage]);
   
-  // Envoyer via WebSocket - CORRECTION: utiliser "chat" au lieu de "chat_message"
+  // Envoyer via WebSocket seulement
   if (ws.current?.readyState === WebSocket.OPEN) {
     ws.current.send(JSON.stringify({
-      type: "chat", // ⬅️ CHANGEMENT ICI
+      type: "chat",
       username: username,
       message: chatInput
     }));
+    console.log("✅ Message sent via WebSocket");
   } else {
     console.error("WebSocket not connected");
+    alert("Erreur de connexion - message non envoyé");
   }
   
   setChatInput("");
