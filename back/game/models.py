@@ -36,6 +36,8 @@ class BacklogItem(models.Model):
 
     def __str__(self):
         return f"[{self.room.code}] {self.title}"
+    
+    
 class Vote(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     username = models.CharField(max_length=255)

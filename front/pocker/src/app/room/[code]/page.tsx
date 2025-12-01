@@ -13,7 +13,6 @@ type Player = {
 export default function RoomLobby({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-
   const [room, setRoom] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploadPreview, setUploadPreview] = useState<any[] | null>(null);
@@ -143,10 +142,6 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
   if (!isClient) return <div style={{ padding: 24 }}>Loading...</div>;
   if (!token) return <div style={{ padding: 24 }}>You need to login.</div>;
   if (loading) return <div style={{ padding: 24 }}>Loading room...</div>;
-
-  // ✅ Redirection si le jeu a déjà démarré
-// ✅ Redirection automatique si la partie a commencé
-
 
   return (
     <main className="room-root">

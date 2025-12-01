@@ -1,6 +1,4 @@
 from django.shortcuts import render
-
-# Create your views here.
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,6 +8,11 @@ from .serializers import RoomCreateSerializer, RoomDetailSerializer
 import uuid
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+import openai
+import os
+from django.conf import settings
+import json
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -98,6 +101,8 @@ def _validate_backlog(payload):
             "description": (item.get("description") or "").strip()[:2000],
         })
     return True, normalized
+
+
 def _validate_backlog(payload):
     """
     payload: list[dict] with at least a title
@@ -229,6 +234,7 @@ def _calculate_result(room, votes):
 
     if mode == "majority":
         return max(set(values), key=values.count)
+    
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def reveal_votes(request, code):
@@ -260,6 +266,8 @@ def reveal_votes(request, code):
     Vote.objects.filter(room=room, task_index=idx).delete()
 
     return Response({"status": "validated", "result": result})
+
+
 @api_view(["GET"])
 def export_results(request, code: str):
     room = get_object_or_404(Room, code=code.upper())
@@ -269,6 +277,7 @@ def export_results(request, code: str):
         "mode": room.mode,
         "results": room.backlog  # contient les estimates
     })
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def kick_player(request, code):
@@ -297,6 +306,8 @@ def kick_player(request, code):
     room.save()
 
     return Response({"status": "kicked", "username": target})
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def promote_player(request, code):
@@ -327,13 +338,8 @@ def promote_player(request, code):
     room.save()
 
     return Response({"status": "promoted", "username": target})
-# views.py - AJOUTER CES IMPORTS
-import openai
-import os
-from django.conf import settings
-import json
 
-# AJOUTER CETTE VUE
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def ai_vote_analysis(request, code):
