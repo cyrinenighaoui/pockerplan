@@ -24,6 +24,21 @@ export function usePlayLogic(code: string) {
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+
+  const [pauseCoffee, setPauseCoffee] = useState(false);
+
+    const resumeSession = () => {
+      if (!ws.current) return;
+
+      if (ws.current.readyState !== WebSocket.OPEN) {
+        console.warn("WS not ready – resume ignored");
+        return;
+      }
+
+      ws.current.send(JSON.stringify({ type: "resume" }));
+    };
+
+
   // 🔁 Scroll auto du chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,10 +73,30 @@ export function usePlayLogic(code: string) {
 
         ws.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
+   
+      if (data.type === "pause_event") {
+        setPauseCoffee(true);
+        setSelectedCard(null); // évite les votes half-ready
+        alert(`☕ Pause demandée par ${data.paused_by}`);
+        return;
+      }
 
-        // ---- 🎯 REVEAL LOGIC RESTORED ----
+
+      if (data.type === "resume_event") {
+        setPauseCoffee(false);
+        setHasVoted(false);
+        setSelectedCard(null);
+        setVotes({});
+        setAllVoted(false);
+        return;
+      }
+                // ---- 🎯 REVEAL LOGIC RESTORED ----
         if (data.type === "reveal_event") {
             console.log("🃏 Reveal event received:", data);
+        if (data.status === "skipped") {
+          alert("⏱️ Temps écoulé — tâche ignorée");
+          window.location.reload();
+        }
 
             if (data.status === "validated") {
             alert(`🃏 Résultat final : ${data.result}`);
@@ -95,7 +130,21 @@ export function usePlayLogic(code: string) {
         // ---- 📌 AUTRES TYPES D'ÉVÉNEMENTS ----
         if (data.type === "presence_event") loadRoomData();
         if (data.type === "voted_event") loadVotes();
-        if (data.type === "snapshot") setStory(data);
+        if (data.type === "snapshot") {
+          setStory(data);
+
+          if (data.is_paused) {
+            setPauseCoffee(true);
+          }
+          return;
+        }
+
+        if (data.status === "coffee") {
+            setPauseCoffee(true);
+            alert(`☕ ${data.user ? data.user : "Quelqu'un"} demande une pause !`);
+            return;
+        }
+
         if (data.type === "chat") {
             setMessages(prev => [...prev, { user: data.username, msg: data.message }]);
         }
@@ -112,7 +161,6 @@ export function usePlayLogic(code: string) {
 
     }, [code, username, loading]);
 
-  // ---------- API CALLS ----------
 
   const loadStory = async () => {
     if (!token) return;
@@ -137,21 +185,17 @@ export function usePlayLogic(code: string) {
       data.players?.some((p: any) => p.username === username && p.role === "admin")
     );
   };
-
   const loadVotes = async () => {
     if (!token) return;
     const res = await fetch(`${API_URL}/api/rooms/${code}/votes/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return;
-    const data = await res.json();
 
+    const data = await res.json();
     setVotes(data);
 
-    // Met à jour hasVoted & allVoted
-    if (username) {
-      setHasVoted(!!data[username]);
-    }
+    // ✅ SEULE logique collective
     if (players.length > 0) {
       setAllVoted(Object.keys(data).length === players.length);
     }
@@ -169,6 +213,11 @@ export function usePlayLogic(code: string) {
 
   const sendVote = async () => {
     if (!selectedCard || !token) return;
+    if (selectedCard === "coffee") {
+    ws.current?.send(JSON.stringify({ type: "coffee", username }));
+    setPauseCoffee(true);
+    alert("☕ Pause demandée !");
+    }
 
     await fetch(`${API_URL}/api/rooms/${code}/vote/`, {
       method: "POST",
@@ -199,23 +248,27 @@ export function usePlayLogic(code: string) {
     loadVotes();
   }, [token, username, code, loading]);
 
-  return {
-    story,
-    votes,
-    players,
-    messages,
-    username,
-    selectedCard,
-    isAdmin,
-    allVoted,
-    chatInput,
-    hasVoted,
-    isConnected,
-    setChatInput,
-    setSelectedCard,
-    sendMessage,
-    sendVote,
-    sendReveal,
-    messagesEndRef,
-  };
+return {
+  story,
+  votes,
+  players,
+  messages,
+  username,
+  selectedCard,
+  isAdmin,
+  allVoted,
+  chatInput,
+  hasVoted,
+  isConnected,
+  pauseCoffee,    
+  setChatInput,
+  setSelectedCard,
+  sendMessage,
+  sendVote,
+  sendReveal,
+  resumeSession  ,
+  messagesEndRef,
+  
+};
+
 }

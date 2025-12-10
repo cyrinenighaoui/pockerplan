@@ -15,6 +15,14 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=3),   # Avant c’était 5min → maintenant 3 jours
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30), # Durée avant expiration totale
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+}
 
 
 # Quick-start development settings - unsuitable for production

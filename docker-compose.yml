@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: ./BACK
+      dockerfile: Dockerfile
+    image: poker-back
+    container_name: poker-backend
+    ports:
+      - "8000:8000"
+    command: daphne -b 0.0.0.0 -p 8000 agilecards.asgi:application
+
+  frontend:
+    build:
+      context: ./front/pocker
+      dockerfile: Dockerfile
+    image: planning-poker-frontend
+    container_name: poker-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend

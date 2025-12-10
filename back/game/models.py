@@ -18,6 +18,8 @@ class Room(models.Model):
     current_task_index = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     started = models.BooleanField(default=False)  # ✅ important
+    is_paused = models.BooleanField(default=False)
+    paused_by = models.CharField(max_length=150, null=True, blank=True)
 
     def __str__(self):
         return f"Room {self.code} ({self.mode})"

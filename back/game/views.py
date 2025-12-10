@@ -406,3 +406,5 @@ def ai_vote_analysis(request, code):
             "total_votes": len(vote_values),
             "required_votes": len(room.players)
         })
+
+       

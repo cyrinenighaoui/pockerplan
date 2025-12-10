@@ -17,6 +17,15 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 
         # Mark presence ON
         await self.group_send("presence", {"username": self.username, "online": True})
+        room = await self.get_room()
+        payload = await self.current_payload(room)
+
+        await self.send_json({
+            "type": "snapshot",
+            **payload,
+            "is_paused": room.is_paused,
+            "paused_by": room.paused_by
+        })
 
         # Send current task + simple counts on connect
         room = await self.get_room()
@@ -35,12 +44,19 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         t = content.get("type")
 
         if t == "vote":
+            room = await self.get_room()
+
+            if room.is_paused:
+                print("⛔ Vote ignoré – room en pause")
+                return  # ⛔ STOP ICI
+
             value = content.get("value")
             await self.save_vote(self.username, value)
-            # Broadcast "voted" progress
+
             counts = await self.vote_counts()
             await self.group_send("voted", counts)
-            
+            # Broadcast "voted" progress
+          
             # ✅ CORRECTION : Envoi direct de l'analyse IA pour TEST
             print(f"🎯 [IA DEBUG] Vote reçu - {counts['voters']}/{counts['total']} votes")
             
@@ -55,11 +71,51 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                     "total_votes": counts["voters"],
                     "required_votes": counts["total"]
                 })
+        elif t == "coffee":
+            room = await self.get_room()
+            room.is_paused = True
+            room.paused_by = self.username
+            await database_sync_to_async(room.save)()
+
+            await self.channel_layer.group_send(self.group, {
+                "type": "pause_event",
+                "paused_by": self.username
+            })
+
+        elif t == "resume":
+            room = await self.get_room()
+            room.is_paused = False
+            room.paused_by = None
+            await database_sync_to_async(room.save)()
+
+            await self.channel_layer.group_send(self.group, {
+                "type": "resume_event"
+            })
+        elif t == "force_reveal":
+            room = await self.get_room()
+
+            if room.is_paused:
+                return
+
+            # ✅ PAS besoin d’être admin (c’est le timer)
+            res = await self.reveal_logic(force=True)
+
+            await self.channel_layer.group_send(self.group, {
+                "type": "reveal_event",
+                **res
+            })
 
         elif t == "reveal":
-            # Only admin allowed
+            room = await self.get_room()
+
+            if room.is_paused:
+                await self.send_json({
+                    "type": "error",
+                    "message": "Session en pause"
+                })
+                return
+
             if not await self.is_admin(self.username):
-                await self.send_json({"type": "error", "message": "Only admin can reveal"})
                 return
 
             res = await self.reveal_logic()
@@ -106,6 +162,10 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             "type": "chat",
             "username": event["username"],
             "message": event["message"]
+        })
+    async def resume_event(self, event):
+        await self.send_json({
+            "type": "resume_event"
         })
 
     # ✅ AJOUT : Handler pour l'analyse IA
@@ -159,42 +219,38 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         total = len(room.players)
         count = Vote.objects.filter(room=room, task_index=idx).count()
         return {"voters": count, "total": total}
-
     @database_sync_to_async
-    def reveal_logic(self):
+    def reveal_logic(self, force=False):
         room = Room.objects.get(code=self.code)
         idx = room.current_task_index
         votes = list(Vote.objects.filter(room=room, task_index=idx))
-        total = len(room.players)
-        if len(votes) < total:
-            return {"status": "wait"}
 
         values = [v.value for v in votes if v.value != "coffee"]
+
+        # ✅ CAS 1 : aucun vote → skip
         if len(values) == 0:
-            return {"status": "coffee"}
+            room.current_task_index += 1
+            room.save()
+            return {"status": "skipped"}
 
-        if room.mode == "strict":
-            result = values[0] if len(set(values)) == 1 else None
-        else:
+        # ✅ CAS 2 : votes partiels AUTORISÉS si force
+        if not force:
+            if len(votes) < len(room.players):
+                return {"status": "wait"}
+
+        # calcul normal
+        if room.mode == "average":
             nums = list(map(int, values))
-            if room.mode == "average":
-                from statistics import mean
-                result = str(round(mean(nums)))
-            elif room.mode == "median":
-                from statistics import median
-                result = str(int(median(nums)))
-            else:
-                result = max(set(values), key=values.count)
-
-        if result is None:
-            Vote.objects.filter(room=room, task_index=idx).delete()
-            return {"status": "revote"}
+            result = str(round(sum(nums) / len(nums)))
+        elif room.mode == "median":
+            nums = sorted(map(int, values))
+            result = str(nums[len(nums)//2])
+        else:
+            result = max(set(values), key=values.count)
 
         room.backlog[idx]["estimate"] = result
         room.current_task_index += 1
         room.save()
         Vote.objects.filter(room=room, task_index=idx).delete()
 
-        done = room.current_task_index >= len(room.backlog)
-        next_item = None if done else room.backlog[room.current_task_index]
-        return {"status": "validated", "result": result, "done": done, "next": next_item}
+        return {"status": "validated", "result": result}

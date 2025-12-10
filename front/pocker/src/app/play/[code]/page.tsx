@@ -9,11 +9,12 @@ export default function PlayPage({ params }: { params: Promise<{ code: string }>
 
   const {
     story, votes, players, messages, username, selectedCard, isAdmin,
-    allVoted, chatInput, hasVoted, isConnected,
+    allVoted, chatInput, hasVoted, isConnected, pauseCoffee,
     setChatInput, setSelectedCard,
     sendMessage, sendVote, sendReveal,
-    messagesEndRef
+    messagesEndRef,    resumeSession   // ✅ 👈 AJOUT ICI
   } = usePlayLogic(code);
+
   if (!story) return <p>Chargement de la tâche…</p>;
 
   return (
@@ -22,23 +23,19 @@ export default function PlayPage({ params }: { params: Promise<{ code: string }>
       {/* LEFT PANEL */}
       <div className="left-panel">
 
+        {/* Header */}
         <div className="task-header">
           <h2>{story.current?.title}</h2>
           <p className="task-description">{story.current?.description}</p>
-          <p className="task-progress">
-            Tâche {story.index} sur {story.total}
-          </p>
+          <p className="task-progress">Tâche {story.index} sur {story.total}</p>
         </div>
 
-        {/* Vote status box */}
+        {/* Vote Status */}
         <div className={`vote-status ${allVoted ? "all-voted" : "waiting"}`}>
-          {allVoted
-            ? "✅ Tous les joueurs ont voté !"
-            : `⏳ Votes : ${Object.keys(votes).length}/${players.length}`
-          }
+          {allVoted ? "✅ Tous les joueurs ont voté !" : `⏳ Votes : ${Object.keys(votes).length}/${players.length}`}
         </div>
 
-        {/* Players state */}
+        {/* Players */}
         <div className="presence-row">
           {players.map((p, i) => (
             <div key={i} className={`chip ${votes[p.username] ? "voted" : ""}`}>
@@ -47,7 +44,7 @@ export default function PlayPage({ params }: { params: Promise<{ code: string }>
           ))}
         </div>
 
-        {/* Cards */}
+        {/* Card Grid */}
         <div className="cards-grid">
           {CARDS.map((c) => (
             <div
@@ -63,23 +60,41 @@ export default function PlayPage({ params }: { params: Promise<{ code: string }>
           ))}
         </div>
 
-        {/* Buttons */}
-        <button className="submit-btn" onClick={sendVote} disabled={!selectedCard || hasVoted}>
+        {/* Vote Button */}
+        <button 
+          className="submit-btn" 
+          onClick={sendVote}
+          disabled={pauseCoffee || hasVoted || !selectedCard}
+        >
           {hasVoted ? "Vote envoyé ✅" : "Voter 🎯"}
         </button>
 
+        {/* Reveal Button */}
         {isAdmin && (
-          <button 
-            className="reveal-btn" 
-            disabled={!allVoted && !hasVoted} 
+          <button
+            className="reveal-btn"
+            disabled={(!allVoted && !hasVoted) || pauseCoffee}
             onClick={sendReveal}
           >
             👀 Révéler les votes
           </button>
         )}
+
+
+
+        {/* Pause Coffee Info */}
+        {pauseCoffee && (
+          <p style={{ color: "orange", marginTop: "10px", fontWeight: "bold" }}>☕ Pause café activée</p>
+        )}
+      {isAdmin && pauseCoffee && (
+        <button className="resume-btn" onClick={resumeSession}>
+          ▶️ Reprendre la session
+        </button>
+      )}
+
       </div>
 
-      {/* RIGHT PANEL CHAT */}
+      {/* RIGHT PANEL (Chat) */}
       <div className="right-panel">
         <div className="chat-container">
           <div className="chat-header">💬 Discussion {isConnected ? "🟢" : "🔴"}</div>
