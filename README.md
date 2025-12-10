@@ -65,6 +65,7 @@ Chaque service possède son propre Dockerfile.
 
 STRUCTURE DU PROJET
 
+```bash
 PORJETPOCKERFINAL/
 |
 |-- docker-compose.yml
@@ -80,7 +81,7 @@ PORJETPOCKERFINAL/
         |-- package.json
         |-- next.config.js
         |-- src/
-
+```
 
 ------------------------------------------------------------
 
