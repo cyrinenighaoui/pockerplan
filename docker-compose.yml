@@ -1,10 +1,39 @@
 services:
+  postgres:
+    image: postgres:15
+    container_name: poker-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: motdepasse
+      POSTGRES_DB: agilecards_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis
+    container_name: poker-redis
+    ports:
+      - "6379:6379"
+
   backend:
     build:
       context: ./BACK
       dockerfile: Dockerfile
     image: poker-back
     container_name: poker-backend
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DB_NAME: agilecards_db
+      DB_USER: postgres
+      DB_PASSWORD: motdepasse
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_HOST: redis
     ports:
       - "8000:8000"
     command: daphne -b 0.0.0.0 -p 8000 agilecards.asgi:application
@@ -15,7 +44,10 @@ services:
       dockerfile: Dockerfile
     image: planning-poker-frontend
     container_name: poker-frontend
-    ports:
-      - "3000:3000"
     depends_on:
       - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

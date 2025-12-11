@@ -8,7 +8,6 @@ from .serializers import RoomCreateSerializer, RoomDetailSerializer
 import uuid
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import openai
 import os
 from django.conf import settings
 import json
@@ -340,71 +339,3 @@ def promote_player(request, code):
     return Response({"status": "promoted", "username": target})
 
 
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def ai_vote_analysis(request, code):
-    """
-    Analyse IA des votes en temps réel
-    """
-    room = get_object_or_404(Room, code=code.upper())
-    current_task = room.backlog[room.current_task_index] if room.current_task_index < len(room.backlog) else None
-    
-    if not current_task:
-        return Response({"error": "No current task"}, status=400)
-
-    # Récupérer les votes actuels
-    votes = Vote.objects.filter(room=room, task_index=room.current_task_index)
-    vote_values = [v.value for v in votes]
-    vote_counts = {value: vote_values.count(value) for value in set(vote_values)}
-    
-    # Préparer le prompt pour l'IA
-    prompt = f"""
-    Tu es un expert en estimation agile. Analyse cette situation de vote :
-    
-    Tâche : "{current_task.get('title', '')}"
-    Description : "{current_task.get('description', '')}"
-    
-    Votes actuels : {vote_counts}
-    Total votes : {len(vote_values)}/{len(room.players)}
-    
-    Donne une analyse courte et percutante (max 2 phrases) :
-    - Pourquoi il y a divergence/convergence ?
-    - Un risque technique à considérer ?
-    - Estimation recommandée et pourquoi ?
-    
-    Sois direct et utile !
-    """
-
-    try:
-        # Appel OpenAI (à configurer dans tes settings)
-        client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
-        
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "Tu es un coach agile expert qui aide les équipes à mieux estimer."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=150,
-            temperature=0.7
-        )
-        
-        analysis = response.choices[0].message.content
-        
-        return Response({
-            "analysis": analysis,
-            "vote_summary": vote_counts,
-            "total_votes": len(vote_values),
-            "required_votes": len(room.players)
-        })
-        
-    except Exception as e:
-        # Fallback si l'IA échoue
-        return Response({
-            "analysis": "🤖 Analyse en cours... Divergence détectée dans les votes. Discutez des complexités techniques !",
-            "vote_summary": vote_counts,
-            "total_votes": len(vote_values),
-            "required_votes": len(room.players)
-        })
-
-       

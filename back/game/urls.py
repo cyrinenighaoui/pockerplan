@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import ai_vote_analysis, create_room, export_results, get_current_task, get_votes, join_room, get_room, kick_player, promote_player, reveal_votes, set_backlog, get_backlog, start_game, submit_vote
+from .views import  create_room, export_results, get_current_task, get_votes, join_room, get_room, kick_player, promote_player, reveal_votes, set_backlog, get_backlog, start_game, submit_vote
 
 urlpatterns = [
     path("rooms/create/", create_room),
@@ -16,6 +16,5 @@ urlpatterns = [
     path("rooms/<str:code>/start/", start_game),  # ✅ ICI !
     path("rooms/<str:code>/kick/", kick_player),
     path("rooms/<str:code>/promote/", promote_player),
-    path("rooms/<str:code>/ai-analysis/", ai_vote_analysis),  # ✅ NOUVELLE ROUTE
 
 ]
