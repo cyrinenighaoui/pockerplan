@@ -1,0 +1,9 @@
+[
+  { "id": 1, "title": "Login page", "description": "UI + validation" },
+  { "id": 2, "title": "Auth API", "description": "JWT endpoints" },
+  { "id": 3, "title": "Dashboard layout", "description": "Sidebar + responsive grid" },
+  { "id": 4, "title": "Real-time vote system", "description": "WebSocket integration for live updates" },
+  { "id": 5, "title": "Vote history export", "description": "PDF/CSV export functionality" },
+  { "id": 6, "title": "User profile management", "description": "Avatar upload + preferences" },
+  { "id": 7, "title": "Mobile app notifications", "description": "Push notifications for vote reminders" }
+]

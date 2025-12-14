@@ -1,4 +1,4 @@
-name: 🧪 CI - Django & Next.js Tests
+name:  CI - Django & Next.js Tests
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend:
-    name: 🐍 Django Backend Tests
+    name:  Django Backend Tests
     runs-on: ubuntu-latest
 
     services:
@@ -26,50 +26,50 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: 🧭 Checkout repository
+      - name:  Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🐍 Set up Python
+      - name:  Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: 📦 Install dependencies
+      - name:  Install dependencies
         run: |
           cd back
           python -m pip install --upgrade pip
-          pip install -r requirements.txt || echo "⚠️ No requirements.txt found, skipping."
+          pip install -r requirements.txt || echo " No requirements.txt found, skipping."
 
-      - name: ⚙️ Run Django migrations
+      - name:  Run Django migrations
         run: |
           cd back
-          python manage.py migrate || echo "⚠️ No migrations to apply."
+          python manage.py migrate || echo " No migrations to apply."
 
-      - name: 🧪 Run Django tests
+      - name:  Run Django tests
         run: |
           cd back
-          python manage.py test || echo "⚠️ Tests failed or not found."
+          python manage.py test || echo " Tests failed or not found."
 
   frontend:
-    name: ⚡ Next.js Frontend Build
+    name:  Next.js Frontend Build
     runs-on: ubuntu-latest
     needs: backend
 
     steps:
-      - name: 🧭 Checkout repository
+      - name:  Checkout repository
         uses: actions/checkout@v4
 
-      - name: ⚙️ Set up Node.js
+      - name:  Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: 📦 Install dependencies
+      - name:  Install dependencies
         run: |
           cd front/pocker
           npm install
 
-      - name: 🏗️ Build Next.js app
+      - name:  Build Next.js app
         run: |
           cd front/pocker
-          npm run build || echo "⚠️ Build failed or skipped."
+          npm run build || echo " Build failed or skipped."

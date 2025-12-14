@@ -1,7 +1,12 @@
+from email.mime import application
 from django.test import TestCase
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from .models import Room, Vote
+from channels.testing import WebsocketCommunicator
+from django.test import TransactionTestCase
+from asgiref.sync import async_to_sync
+
 
 class PokerGameTests(TestCase):
     def setUp(self):
@@ -53,3 +58,22 @@ class PokerGameTests(TestCase):
         # Reveal
         response = self.client.post(f"/api/rooms/{room.code}/reveal/", {}, format="json")
         self.assertIn(response.status_code, [200, 400])  # selon si plusieurs joueurs requis
+    def test_unauthorized_access(self):
+        self.client.logout()
+        response = self.client.post("/api/rooms/create/", {"mode": "strict"})
+        self.assertEqual(response.status_code, 401)
+
+
+class WebSocketTests(TransactionTestCase):
+
+    def test_websocket_connection(self):
+        async_to_sync(self._test_websocket_connection)()
+
+    async def _test_websocket_connection(self):
+        communicator = WebsocketCommunicator(
+            application,
+            "/ws/poker/testroom/"
+        )
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected)
+        await communicator.disconnect()
