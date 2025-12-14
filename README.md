@@ -32,6 +32,8 @@ de l’environnement local.
 
 
 ------------------------------------------------------------
+📄 Le rapport final du projet est disponible à la racine du dépôt : Rapport_Planning_Poker.pdf
+------------------------------------------------------------
 
 ARCHITECTURE TECHNIQUE
 
