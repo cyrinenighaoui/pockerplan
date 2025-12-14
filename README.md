@@ -98,10 +98,11 @@ Aucune autre installation n’est nécessaire.
 LANCER L’APPLICATION
 
 À la racine du projet :
+```bash
 
 docker compose build
 docker compose up
-
+```
 Le premier lancement peut prendre quelques minutes.
 
 
