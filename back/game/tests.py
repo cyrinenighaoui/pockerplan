@@ -25,14 +25,20 @@ class PokerGameTests(TestCase):
         self.assertEqual(Room.objects.count(), 1)
 
     def test_join_room(self):
-        """Un joueur rejoint une room"""
-        room = Room.objects.create(mode="strict", creator=self.user, players=[{"username": "admin", "role": "admin"}])
+        room = Room.objects.create(
+            mode="strict",
+            creator=self.user,
+            players=[{"username": "admin", "role": "admin"}]
+        )
+
         user2 = User.objects.create_user(username="player1", password="test")
-        self.client.login(username="player1", password="test")
+        self.client.force_authenticate(user=user2)
 
         response = self.client.post("/api/rooms/join/", {"code": room.code}, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(Room.objects.get(code=room.code).players), 2)
+
+        room.refresh_from_db()
+        self.assertEqual(len(room.players), 2)
 
     def test_set_backlog(self):
         """Upload d’un backlog JSON"""
