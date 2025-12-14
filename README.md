@@ -155,6 +155,15 @@ CONSEILS DE TEST
 
 ------------------------------------------------------------
 
+IMPORTATION DU PRODUCT BACKLOG (IMPORTANT)
+
+Avant de pouvoir commencer une session de vote, il est nécessaire d'importer un fichier JSON contenant le product backlog.
+
+**Fichier de test fourni :**
+Le dossier principal du projet contient un fichier nommé `product-backlog.json` que vous pouvez utiliser .
+
+------------------------------------------------------------
+
 ÉTAT DU PROJET
 
 - Application fonctionnelle
