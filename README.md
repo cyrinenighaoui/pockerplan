@@ -1,4 +1,4 @@
-# 🃏 Planning Poker – Application Dockerisée
+#  Planning Poker – Application Dockerisée
 
 ##  Vidéo de démonstration
 
