@@ -9,8 +9,7 @@
 - système de chat
 
 🔗 **Voir la vidéo de démonstration** :  
-https://github.com/cyrinenighaoui/pockerplan/issues/4
-
+[https://github.com/cyrinenighaoui/pockerplan/issues/4 ](https://github.com/cyrinenighaoui/pockerplan/issues/4#issue-3731505960 )
 
 ⚠️ **REMARQUE IMPORTANTE AVANT LE TEST (À LIRE)**
 
