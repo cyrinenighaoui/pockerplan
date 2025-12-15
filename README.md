@@ -2,7 +2,14 @@
 
 **Vidéo de démonstration**
 
-https://github.com/cyrinenighaoui/pockerplan/issues/4#issue-3731505960
+ **Démonstration complète de l’application**  
+(création de salle, votes en temps réel, pause café,chat ...)
+
+🔗 **Lien vers la vidéo** :  
+[https://github.com/cyrinenighaoui/pockerplan/issues/4
+](https://github.com/cyrinenighaoui/pockerplan/issues/4#issue-3731505960
+)
+---
 
 ⚠️ REMARQUE IMPORTANTE AVANT LE TEST (À LIRE)
 
