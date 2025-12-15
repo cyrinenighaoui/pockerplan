@@ -1,3 +1,5 @@
+ **Vidéo de démonstration**
+https://github.com/cyrinenighaoui/pockerplan/issues/4#issue-3731505960
 # Planning Poker – Application Dockerisée
 ⚠️ REMARQUE IMPORTANTE AVANT LE TEST (À LIRE)
 
