@@ -9,10 +9,10 @@ export default function PlayPage({ params }: { params: Promise<{ code: string }>
 
   const {
     story, votes, players, messages, username, selectedCard, isAdmin,
-    allVoted, chatInput, hasVoted, isConnected, pauseCoffee,
+     chatInput, hasVoted, isConnected, pauseCoffee,
     setChatInput, setSelectedCard,
     sendMessage, sendVote, sendReveal,
-    messagesEndRef,    resumeSession  
+    messagesEndRef,    resumeSession  ,allVoted,votesCount,totalPlayers
   } = usePlayLogic(code);
 
   if (!story) return <p>Chargement de la tâche…</p>;
@@ -30,10 +30,7 @@ export default function PlayPage({ params }: { params: Promise<{ code: string }>
           <p className="task-progress">Tâche {story.index} sur {story.total}</p>
         </div>
 
-        {/* Vote Status */}
-        <div className={`vote-status ${allVoted ? "all-voted" : "waiting"}`}>
-          {allVoted ? "✅ Tous les joueurs ont voté !" : `⏳ Votes : ${Object.keys(votes).length}/${players.length}`}
-        </div>
+
 
         {/* Players */}
         <div className="presence-row">
@@ -73,13 +70,12 @@ export default function PlayPage({ params }: { params: Promise<{ code: string }>
         {isAdmin && (
           <button
             className="reveal-btn"
-            disabled={(!allVoted && !hasVoted) || pauseCoffee}
+            disabled={pauseCoffee || !allVoted}
             onClick={sendReveal}
           >
-            👀 Révéler les votes
+            👀 Révéler les votes {!allVoted && `(${votesCount}/${totalPlayers})`}
           </button>
         )}
-
 
 
         {/* Pause Coffee Info */}

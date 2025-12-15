@@ -14,7 +14,6 @@ export function usePlayLogic(code: string) {
   const [chatInput, setChatInput] = useState("");
 
   const [hasVoted, setHasVoted] = useState(false);
-  const [allVoted, setAllVoted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   const [token, setToken] = useState<string | null>(null);
@@ -23,21 +22,10 @@ export function usePlayLogic(code: string) {
   const [isConnected, setIsConnected] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
-
+  const [requiredVotes, setRequiredVotes] = useState(0);
   const [pauseCoffee, setPauseCoffee] = useState(false);
-
-    const resumeSession = () => {
-      if (!ws.current) return;
-
-      if (ws.current.readyState !== WebSocket.OPEN) {
-        console.warn("WS not ready – resume ignored");
-        return;
-      }
-
-      ws.current.send(JSON.stringify({ type: "resume" }));
-    };
-
+  const [votesCount, setVotesCount] = useState(0);
+  const [totalPlayers, setTotalPlayers] = useState(0);
 
   //  Scroll auto du chat
   useEffect(() => {
@@ -58,151 +46,215 @@ export function usePlayLogic(code: string) {
     }
   }, [story, code]);
 
-  // 🌐 Connexion WebSocket
-    useEffect(() => {
+  // ---------- FONCTIONS DE CHARGEMENT ----------
+  const loadRoomData = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/api/rooms/${code}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      setPlayers(data.players || []);
+      setTotalPlayers(data.players?.length || 0);
+      setRequiredVotes(data.players?.length || 0);
+
+      setIsAdmin(
+        data.players?.some(
+          (p: any) => p.username === username && p.role === "admin"
+        )
+      );
+    } catch (error) {
+      console.error("Error loading room data:", error);
+    }
+  };
+
+  const loadVotes = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/api/rooms/${code}/votes/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      setVotes(data);
+      setVotesCount(Object.keys(data).length);
+    } catch (error) {
+      console.error("Error loading votes:", error);
+    }
+  };
+
+  // Calcul pour savoir si tous ont voté
+  const allVoted = votesCount >= totalPlayers;
+
+  const resumeSession = () => {
+    if (!ws.current) return;
+
+    if (ws.current.readyState !== WebSocket.OPEN) {
+      console.warn("WS not ready – resume ignored");
+      return;
+    }
+
+    ws.current.send(JSON.stringify({ type: "resume" }));
+  };
+
+  // ---------- CONNEXION WEBSOCKET ----------
+  useEffect(() => {
     if (!code || !username || loading) return;
 
     let reconnectTimeout: NodeJS.Timeout;
 
     const connect = () => {
-        ws.current = new WebSocket(`ws://localhost:8000/ws/rooms/${code}/?username=${username}`);
+      ws.current = new WebSocket(`ws://localhost:8000/ws/rooms/${code}/?username=${username}`);
 
-        ws.current.onopen = () => {
+      ws.current.onopen = () => {
         setIsConnected(true);
-        };
+        console.log("✅ WebSocket connected");
+      };
 
-        ws.current.onmessage = (event) => {
+      ws.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
-   
-      if (data.type === "pause_event") {
-        setPauseCoffee(true);
-        setSelectedCard(null); // évite les votes half-ready
-        alert(`☕ Pause demandée par ${data.paused_by}`);
-        return;
-      }
+        console.log("📩 WS Message received:", data.type); // Debug
 
-
-      if (data.type === "resume_event") {
-        setPauseCoffee(false);
-        setHasVoted(false);
-        setSelectedCard(null);
-        setVotes({});
-        setAllVoted(false);
-        return;
-      }
-                // ----  REVEAL LOGIC RESTORED ----
-        if (data.type === "reveal_event") {
-            console.log("🃏 Reveal event received:", data);
-        if (data.status === "skipped") {
-          alert("⏱️ Temps écoulé — tâche ignorée");
-          window.location.reload();
+        // ---- PAUSE EVENT ----
+        if (data.type === "pause_event") {
+          setPauseCoffee(true);
+          setSelectedCard(null);
+          alert(`☕ Pause demandée par ${data.paused_by}`);
+          return;
+        }
+  // Dans ws.current.onmessage, ajoutez :
+  if (data.type === "votes_updated") {
+      console.log("🗳️ Votes updated:", data.votes);
+      setVotes(data.votes);
+      setVotesCount(Object.keys(data.votes).length);
+      setRequiredVotes(data.counts.total);
+      return;
+  }
+        // ---- ERROR ----
+        if (data.type === "error") {
+          console.log("⛔ WS ERROR:", data);
+          alert(data.message || "Erreur WS");
+          return;
         }
 
-            if (data.status === "validated") {
-            alert(`🃏 Résultat final : ${data.result}`);
-
-            // Reload => show next task
-            setTimeout(() => window.location.reload(), 700);
-
-            setSelectedCard(null);
-            setVotes({});
-            setAllVoted(false);
-            setHasVoted(false);
+        // ---- RESUME EVENT ----
+        if (data.type === "resume_event") {
+          setPauseCoffee(false);
+          setHasVoted(false);
+          setSelectedCard(null);
+          setVotes({});
+          setVotesCount(0);
+          return;
+        }
+        // Dans ws.current.onmessage
+        if (data.type === "reveal") {
+            console.log("🃏 Reveal event received:", data);
+            
+            if (data.status === "skipped") {
+                alert("⏱️ Temps écoulé — tâche ignorée");
+                window.location.reload();
+            } 
+            else if (data.status === "validated") {
+                alert(`🃏 Résultat final : ${data.result}`);
+                setTimeout(() => window.location.reload(), 700);
+                setSelectedCard(null);
+                setVotes({});
+                setVotesCount(0);
+                setHasVoted(false);
             } 
             else if (data.status === "revote") {
-            alert("❌ Aucun accord — on revote !");
-            setVotes({});
-            setAllVoted(false);
-            setSelectedCard(null);
-            setHasVoted(false);
+                // ✅ GÉRER LE REVOTE EN MODE STRICT
+                alert("❌ Pas d'accord en mode strict ! On revote...");
+                
+                // Réinitialiser l'état de vote
+                setSelectedCard(null);
+                setVotes({});
+                setVotesCount(0);
+                setHasVoted(false);
+                
+                // Option 1: Recharger la page
+                // setTimeout(() => window.location.reload(), 1000);
+                
+                // Option 2: Resetter sans recharger (meilleure UX)
+                // Juste resetter l'état, les votes sont déjà supprimés côté serveur
             } 
             else if (data.status === "coffee") {
-            alert("☕ Pause café !");
-            setHasVoted(false);
+                alert("☕ Pause café !");
+                setHasVoted(false);
             } 
             else if (data.status === "wait") {
-            alert("⌛ En attente des votes restants…");
+                alert("⌛ En attente des votes restants…");
             }
-
-            return; //  prevents other handlers from interfering
+            
+            return;
         }
 
-        // ----  AUTRES TYPES D'ÉVÉNEMENTS ----
-        if (data.type === "presence_event") loadRoomData();
-        if (data.type === "voted_event") loadVotes();
+        // ---- REVEAL EVENT ----
+        // ---- VOTED EVENT (TRÈS IMPORTANT) ----
+        if (data.type === "voted") {
+          console.log("🗳️ Voted event:", data);
+          setRequiredVotes(data.total);
+          // Recharger les votes immédiatement quand quelqu'un vote
+          loadVotes();
+          return;
+        }
+
+        // ---- PRESENCE EVENT ----
+        if (data.type === "presence") {
+          loadRoomData();
+          return;
+        }
+
+        // ---- SNAPSHOT EVENT ----
         if (data.type === "snapshot") {
           setStory(data);
-
           if (data.is_paused) {
             setPauseCoffee(true);
           }
           return;
         }
 
-        if (data.status === "coffee") {
-            setPauseCoffee(true);
-            alert(`☕ ${data.user ? data.user : "Quelqu'un"} demande une pause !`);
-            return;
-        }
-
+        // ---- CHAT EVENT ----
         if (data.type === "chat") {
-            setMessages(prev => [...prev, { user: data.username, msg: data.message }]);
+          setMessages(prev => [...prev, { user: data.username, msg: data.message }]);
+          return;
         }
-        };
+      };
 
-        ws.current.onclose = () => {
+      ws.current.onclose = () => {
         setIsConnected(false);
+        console.log("🔌 WebSocket disconnected - reconnecting...");
         reconnectTimeout = setTimeout(connect, 2000);
-        };
+      };
+
+      ws.current.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
     };
 
     connect();
-    return () => clearTimeout(reconnectTimeout);
+    
+    return () => {
+      clearTimeout(reconnectTimeout);
+      if (ws.current) {
+        ws.current.close();
+      }
+    };
+  }, [code, username, loading, token]);
 
-    }, [code, username, loading]);
+  // ---------- INITIAL LOAD ----------
+  useEffect(() => {
+    if (!token || !username || !code || loading) return;
 
-
-  const loadStory = async () => {
-    if (!token) return;
-    const res = await fetch(`${API_URL}/api/rooms/${code}/current/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    setStory(data);
-  };
-
-  const loadRoomData = async () => {
-    if (!token) return;
-    const res = await fetch(`${API_URL}/api/rooms/${code}/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-
-    setPlayers(data.players || []);
-    setIsAdmin(
-      data.players?.some((p: any) => p.username === username && p.role === "admin")
-    );
-  };
-  const loadVotes = async () => {
-    if (!token) return;
-    const res = await fetch(`${API_URL}/api/rooms/${code}/votes/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) return;
-
-    const data = await res.json();
-    setVotes(data);
-
-    //SEULE logique collective
-    if (players.length > 0) {
-      setAllVoted(Object.keys(data).length === players.length);
-    }
-  };
+    console.log("🔄 Initial load...");
+    loadRoomData();
+    loadVotes();
+  }, [token, username, code, loading]);
 
   // ---------- ACTIONS ----------
-
   const sendMessage = () => {
     if (!ws.current || !chatInput.trim()) return;
     ws.current.send(
@@ -213,62 +265,81 @@ export function usePlayLogic(code: string) {
 
   const sendVote = async () => {
     if (!selectedCard || !token) return;
+    
     if (selectedCard === "coffee") {
-    ws.current?.send(JSON.stringify({ type: "coffee", username }));
-    setPauseCoffee(true);
-    alert("☕ Pause demandée !");
+      ws.current?.send(JSON.stringify({ type: "coffee" }));
+      setPauseCoffee(true);
+      alert("☕ Pause demandée !");
+      return;
     }
 
-    await fetch(`${API_URL}/api/rooms/${code}/vote/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ value: selectedCard }),
-    });
+    try {
+      // Enregistrer le vote via API REST
+      await fetch(`${API_URL}/api/rooms/${code}/vote/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ value: selectedCard }),
+      });
 
-    ws.current?.send(JSON.stringify({ type: "vote" }));
-    setHasVoted(true);
+      // Envoyer le vote via WebSocket
+      ws.current?.send(JSON.stringify({ type: "vote", value: selectedCard }));
+
+      setHasVoted(true);
+      
+      // Recharger les votes immédiatement
+      setTimeout(() => loadVotes(), 100);
+      
+      console.log("✅ Vote sent:", selectedCard);
+    } catch (error) {
+      console.error("Error sending vote:", error);
+      alert("Erreur lors de l'envoi du vote");
+    }
   };
 
   const sendReveal = () => {
-    if (!ws.current) return;
+    console.log("👀 CLICK REVEAL", {
+      wsExists: !!ws.current,
+      readyState: ws.current?.readyState,
+      username,
+      isAdmin,
+      pauseCoffee,
+      votesCount,
+      totalPlayers,
+      allVoted,
+    });
+
+    if (!ws.current) return alert("WebSocket non connecté");
+    if (ws.current.readyState !== WebSocket.OPEN) return alert("WebSocket non ouvert");
+    if (!allVoted) return alert(`Attendez que tout le monde vote ! (${votesCount}/${totalPlayers})`);
+
     ws.current.send(JSON.stringify({ type: "reveal" }));
-    //  On ne reload PAS ici, on attend le "reveal_event" du serveur
+    console.log("📤 Reveal sent");
   };
 
-  // ---------- INITIAL LOAD ----------
-
-  useEffect(() => {
-    if (!token || !username || !code || loading) return;
-
-    loadStory();
-    loadRoomData();
-    loadVotes();
-  }, [token, username, code, loading]);
-
-return {
-  story,
-  votes,
-  players,
-  messages,
-  username,
-  selectedCard,
-  isAdmin,
-  allVoted,
-  chatInput,
-  hasVoted,
-  isConnected,
-  pauseCoffee,    
-  setChatInput,
-  setSelectedCard,
-  sendMessage,
-  sendVote,
-  sendReveal,
-  resumeSession  ,
-  messagesEndRef,
-  
-};
-
+  return {
+    story,
+    votes,
+    players,
+    messages,
+    username,
+    selectedCard,
+    isAdmin,
+    chatInput,
+    hasVoted,
+    isConnected,
+    pauseCoffee,
+    votesCount,
+    totalPlayers,
+    allVoted,
+    setChatInput,
+    setSelectedCard,
+    sendMessage,
+    sendVote,
+    sendReveal,
+    resumeSession,
+    messagesEndRef,
+  };
 }

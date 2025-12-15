@@ -199,9 +199,17 @@ def get_votes(request, code):
 def get_current_task(request, code):
     room = get_object_or_404(Room, code=code.upper())
     idx = room.current_task_index
-    if idx >= len(room.backlog):
-        return Response({"done": True})
-    return Response(room.backlog[idx])
+    backlog = room.backlog or []
+
+    if idx >= len(backlog):
+        return Response({"done": True, "current": None, "total": len(backlog), "index": idx})
+
+    return Response({
+        "done": False,
+        "current": backlog[idx],
+        "total": len(backlog),
+        "index": idx + 1
+    })
 
 
 def _calculate_result(room, votes):
