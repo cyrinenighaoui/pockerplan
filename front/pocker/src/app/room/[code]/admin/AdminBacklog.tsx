@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { API_URL } from "../../../../../lib/api";
 
 interface BacklogItem {
-  external_id: string; // ← CORRECTION ICI
+  external_id: string; 
   title: string;
   description?: string;
   order?: number;
@@ -50,7 +50,7 @@ export default function AdminBacklog({ room, code, token, addLog, onRoomUpdate }
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(updatedBacklog.map(item => ({
-          id: item.external_id, // ← Adaptation pour le backend
+          id: item.external_id, 
           title: item.title,
           description: item.description,
           order: item.order
@@ -73,12 +73,12 @@ export default function AdminBacklog({ room, code, token, addLog, onRoomUpdate }
     }
   };
 
-  // ➕ Ajouter feature
+  //  Ajouter feature
   const addFeature = async () => {
     if (!newTitle.trim()) return alert("Title required");
 
     const newItem: BacklogItem = {
-      external_id: crypto.randomUUID(), // ← CORRECTION ICI
+      external_id: crypto.randomUUID(),
       title: newTitle.trim(),
       description: newDesc.trim(),
       order: localBacklog.length + 1
@@ -95,7 +95,7 @@ export default function AdminBacklog({ room, code, token, addLog, onRoomUpdate }
     }
   };
 
-  // 📝 Modifier feature
+  //  Modifier feature
   const saveEdit = async (index: number) => {
     if (!editTitle.trim()) return alert("Title required");
 
@@ -113,7 +113,7 @@ export default function AdminBacklog({ room, code, token, addLog, onRoomUpdate }
     }
   };
 
-  // ❌ Supprimer feature
+  //  Supprimer feature
   const removeFeature = async (index: number) => {
     if (!confirm("Delete this item?")) return;
 
@@ -138,7 +138,7 @@ export default function AdminBacklog({ room, code, token, addLog, onRoomUpdate }
 
       <div className="backlog-admin-list">
         {localBacklog.map((item, i) => (
-          <div key={item.external_id} className="backlog-admin-item"> {/* ← CORRECTION ICI */}
+          <div key={item.external_id} className="backlog-admin-item"> {}
             {editingIndex === i ? (
               <div className="edit-form">
                 <input
@@ -194,7 +194,7 @@ export default function AdminBacklog({ room, code, token, addLog, onRoomUpdate }
         ))}
       </div>
 
-      {/* ➕ ADD NEW FEATURE */}
+      {/*  ADD NEW FEATURE */}
       {!isAdding ? (
         <button className="admin-btn primary" onClick={() => setIsAdding(true)}>
           ➕ Add feature

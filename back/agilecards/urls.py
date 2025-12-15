@@ -23,6 +23,6 @@ from api.urls import ping
 urlpatterns = [
     path("ping/", ping),
     path("auth/", include("accounts.urls")),
-    path("api/", include("game.urls")),       # <-- AJOUTER
+    path("api/", include("game.urls")),    
 
 ]

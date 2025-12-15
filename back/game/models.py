@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 from django.db import models
 from django.contrib.auth.models import User
 import string, random
@@ -17,7 +16,7 @@ class Room(models.Model):
     backlog = models.JSONField(default=list)      # [{ id, title, description }]
     current_task_index = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    started = models.BooleanField(default=False)  # ✅ important
+    started = models.BooleanField(default=False)  
     is_paused = models.BooleanField(default=False)
     paused_by = models.CharField(max_length=150, null=True, blank=True)
 
@@ -30,10 +29,10 @@ class BacklogItem(models.Model):
     Keeps id/title/description and an optional ordering/index.
     """
     room = models.ForeignKey(Room, related_name="items", on_delete=models.CASCADE)
-    external_id = models.CharField(max_length=100, blank=True, null=True)  # could store incoming id
+    external_id = models.CharField(max_length=100, blank=True, null=True)  
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    order = models.IntegerField(default=0)  # optional ordering
+    order = models.IntegerField(default=0)  
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

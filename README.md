@@ -101,7 +101,7 @@ LANCER L’APPLICATION
 
 À la racine du projet :
 ```bash
-
+cd PORJETPOCKERFINAL
 docker compose build
 docker compose up
 ```
@@ -135,16 +135,17 @@ Les changements dans le code ne sont PAS pris en compte automatiquement.
 
 
 Après modification du frontend :
+```bash
 
 docker compose build frontend --no-cache
 docker compose up
-
+```
 
 Après modification du backend :
-
+```bash
 docker compose build backend --no-cache
 docker compose up
-
+```
 
 ------------------------------------------------------------
 
@@ -177,7 +178,5 @@ Le dossier principal du projet contient un fichier nommé `product-backlog.json`
 
 ------------------------------------------------------------
 
-AUTEUR
-
-Projet académique – Planning Poker
-Application entièrement dockerisée (frontend + backend)
+Réalisé par : 
+Amadou Macka et Cyrine Nighaoui

@@ -12,7 +12,7 @@ export default function PlayPage({ params }: { params: Promise<{ code: string }>
     allVoted, chatInput, hasVoted, isConnected, pauseCoffee,
     setChatInput, setSelectedCard,
     sendMessage, sendVote, sendReveal,
-    messagesEndRef,    resumeSession   // ✅ 👈 AJOUT ICI
+    messagesEndRef,    resumeSession  
   } = usePlayLogic(code);
 
   if (!story) return <p>Chargement de la tâche…</p>;

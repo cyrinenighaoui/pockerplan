@@ -27,7 +27,7 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
     setUsername(localStorage.getItem("username"));
   }, []);
 
-  // 🔁 Récupération des infos de la room
+  //  Récupération des infos de la room
   const fetchRoom = async () => {
     if (!token) return;
 
@@ -40,7 +40,7 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
       if (res.ok) {
         setRoom(data);
 
-        // 🚀 Si la partie a démarré -> redirection automatique
+        //  Si la partie a démarré -> redirection automatique
         if (data.started) {
           router.push(`/play/${code}`);
           return;
@@ -53,7 +53,7 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
     setLoading(false);
   };
 
-  // 🔄 Rafraîchissement toutes les 2 secondes
+  //  Rafraîchissement toutes les 2 secondes
   useEffect(() => {
     if (token && code) {
       fetchRoom();
@@ -67,7 +67,7 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
     }
   }, [room, code, router]);
 
-  // 🚀 Lancer la partie (admin)
+  //  Lancer la partie (admin)
   const handleStart = async () => {
     if (!token) return alert("Not authorized");
 
@@ -90,7 +90,7 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
     }
   };
 
-  // 🧾 Upload backlog (admin)
+  //  Upload backlog (admin)
   const handleFile = async (file: File) => {
     setMsg("");
     if (!file) return;
@@ -134,11 +134,11 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
     }
   };
 
-  // 🧑‍💻 Vérifie si utilisateur = admin
+  //  Vérifie si utilisateur = admin
   const players: Player[] = room?.players || [];
   const isAdmin = players.some((p) => p.username === username && p.role === "admin");
 
-  // 🕓 États d’attente
+  //  États d’attente
   if (!isClient) return <div style={{ padding: 24 }}>Loading...</div>;
   if (!token) return <div style={{ padding: 24 }}>You need to login.</div>;
   if (loading) return <div style={{ padding: 24 }}>Loading room...</div>;
@@ -195,7 +195,7 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
           ))}
         </div>
 
-        {/* ✅ INTERFACE ADMIN */}
+        {/*  INTERFACE ADMIN */}
         {isAdmin && (
           <div className="backlog-block">
             <div className="backlog-title">Backlog JSON</div>
@@ -207,7 +207,7 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
                 onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
               />
               <button className="btn primary" onClick={handleUpload} disabled={!uploadPreview}>
-                Upload to room
+                Click to upload 
               </button>
             </div>
 
@@ -229,7 +229,7 @@ export default function RoomLobby({ params }: { params: Promise<{ code: string }
           </div>
         )}
 
-        {/* ✅ INTERFACE JOUEUR NORMAL */}
+        {/*  INTERFACE JOUEUR NORMAL */}
         {!isAdmin && (
           <div className="info-zone">
             <p>Waiting for the admin to start the game… 🕒</p>

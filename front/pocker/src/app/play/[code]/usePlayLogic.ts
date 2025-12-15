@@ -39,12 +39,12 @@ export function usePlayLogic(code: string) {
     };
 
 
-  // 🔁 Scroll auto du chat
+  //  Scroll auto du chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔐 Charger token + username depuis localStorage
+  //  Charger token + username depuis localStorage
   useEffect(() => {
     setToken(localStorage.getItem("token"));
     setUsername(localStorage.getItem("username"));
@@ -90,7 +90,7 @@ export function usePlayLogic(code: string) {
         setAllVoted(false);
         return;
       }
-                // ---- 🎯 REVEAL LOGIC RESTORED ----
+                // ----  REVEAL LOGIC RESTORED ----
         if (data.type === "reveal_event") {
             console.log("🃏 Reveal event received:", data);
         if (data.status === "skipped") {
@@ -124,10 +124,10 @@ export function usePlayLogic(code: string) {
             alert("⌛ En attente des votes restants…");
             }
 
-            return; // 🔥 prevents other handlers from interfering
+            return; //  prevents other handlers from interfering
         }
 
-        // ---- 📌 AUTRES TYPES D'ÉVÉNEMENTS ----
+        // ----  AUTRES TYPES D'ÉVÉNEMENTS ----
         if (data.type === "presence_event") loadRoomData();
         if (data.type === "voted_event") loadVotes();
         if (data.type === "snapshot") {
@@ -195,7 +195,7 @@ export function usePlayLogic(code: string) {
     const data = await res.json();
     setVotes(data);
 
-    // ✅ SEULE logique collective
+    //SEULE logique collective
     if (players.length > 0) {
       setAllVoted(Object.keys(data).length === players.length);
     }
@@ -235,7 +235,7 @@ export function usePlayLogic(code: string) {
   const sendReveal = () => {
     if (!ws.current) return;
     ws.current.send(JSON.stringify({ type: "reveal" }));
-    // 💡 On ne reload PAS ici, on attend le "reveal_event" du serveur
+    //  On ne reload PAS ici, on attend le "reveal_event" du serveur
   };
 
   // ---------- INITIAL LOAD ----------

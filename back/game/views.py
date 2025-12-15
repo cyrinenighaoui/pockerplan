@@ -64,7 +64,6 @@ def join_room(request):
     room = get_object_or_404(Room, code=code)
     username = request.user.username
 
-    # Déjà présent ?
     for p in room.players:
         if p.get("username") == username:
             return Response({"status": "already_joined", "code": room.code})
@@ -194,6 +193,7 @@ def get_votes(request, code):
     index = room.current_task_index
     votes = Vote.objects.filter(room=room, task_index=index)
     return Response({v.username: v.value for v in votes})
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_current_task(request, code):
@@ -217,7 +217,7 @@ def _calculate_result(room, votes):
     if mode == "strict":
         if len(set(values)) == 1:
             return values[0]
-        return None  # pas unanimité => revote
+        return None  # pas unanimité -> revote
 
     # OTHER MODES (Average / Median / Majority)
     numbers = list(map(int, values))
@@ -337,5 +337,3 @@ def promote_player(request, code):
     room.save()
 
     return Response({"status": "promoted", "username": target})
-
-

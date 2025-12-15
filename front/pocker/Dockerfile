@@ -11,7 +11,7 @@ RUN npm install
 
 # Copier le reste du code
 COPY . .
-RUN echo "🔥 BUILD FRONT DOCKER 🔥"
+RUN echo " BUILD FRONT DOCKER "
 
 # Build du frontend
 RUN npm run build

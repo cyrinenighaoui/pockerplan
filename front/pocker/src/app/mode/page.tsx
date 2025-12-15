@@ -1,5 +1,4 @@
 "use client";
-// Import des hooks et composants React/Next.js
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import "./mode.css";

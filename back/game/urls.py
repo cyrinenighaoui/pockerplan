@@ -13,7 +13,7 @@ urlpatterns = [
     path("rooms/<str:code>/current/", get_current_task),
     path("rooms/<str:code>/reveal/", reveal_votes),
     path("rooms/<str:code>/export/", export_results),
-    path("rooms/<str:code>/start/", start_game),  # ✅ ICI !
+    path("rooms/<str:code>/start/", start_game),  
     path("rooms/<str:code>/kick/", kick_player),
     path("rooms/<str:code>/promote/", promote_player),
 

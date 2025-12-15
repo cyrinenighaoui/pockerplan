@@ -48,7 +48,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 
             if room.is_paused:
                 print("⛔ Vote ignoré – room en pause")
-                return  # ⛔ STOP ICI
+                return  
 
             value = content.get("value")
             await self.save_vote(self.username, value)
@@ -57,7 +57,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             await self.group_send("voted", counts)
             # Broadcast "voted" progress
           
-            # ✅ CORRECTION : Envoi direct de l'analyse IA pour TEST
+            #  CORRECTION : Envoi direct de l'analyse IA pour TEST
             print(f"🎯 [IA DEBUG] Vote reçu - {counts['voters']}/{counts['total']} votes")
             
             if counts["voters"] >= counts["total"]:
@@ -97,7 +97,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             if room.is_paused:
                 return
 
-            # ✅ PAS besoin d’être admin (c’est le timer)
+            #  PAS besoin d’être admin (c’est le timer)
             res = await self.reveal_logic(force=True)
 
             await self.channel_layer.group_send(self.group, {
@@ -132,7 +132,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 **payload
             })
 
-        # ✅ Gestion du chat
+        # Gestion du chat
         elif t == "chat":
             print(f"💬 Chat message from {self.username}: {content.get('message')}")
             await self.channel_layer.group_send(self.group, {
@@ -168,7 +168,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             "type": "resume_event"
         })
 
-    # ✅ AJOUT : Handler pour l'analyse IA
+    #  AJOUT : Handler pour l'analyse IA
     async def ai_analysis_event(self, event):
         print("🤖 [IA] Envoi de l'analyse au frontend...")
         await self.send_json({
@@ -227,13 +227,13 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 
         values = [v.value for v in votes if v.value != "coffee"]
 
-        # ✅ CAS 1 : aucun vote → skip
+        #  CAS 1 : aucun vote → skip
         if len(values) == 0:
             room.current_task_index += 1
             room.save()
             return {"status": "skipped"}
 
-        # ✅ CAS 2 : votes partiels AUTORISÉS si force
+        #  CAS 2 : votes partiels AUTORISÉS si force
         if not force:
             if len(votes) < len(room.players):
                 return {"status": "wait"}
