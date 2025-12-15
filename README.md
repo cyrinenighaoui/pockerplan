@@ -1,5 +1,4 @@
 # Planning Poker – Application Dockerisée
-<!-- Failed to upload "Vidéo sans titre − 1765820196803.mp4" -->
 ⚠️ REMARQUE IMPORTANTE AVANT LE TEST (À LIRE)
 
 Pour tester correctement plusieurs utilisateurs / sessions en parallèle :
