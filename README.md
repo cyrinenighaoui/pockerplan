@@ -1,17 +1,18 @@
-# Planning Poker – Application Dockerisée
+# 🃏 Planning Poker – Application Dockerisée
 
-**Vidéo de démonstration**
+##  Vidéo de démonstration
 
- **Démonstration complète de l’application**  
-(création de salle, votes en temps réel, pause café,chat ...)
+ **Démonstration complète de l’application**, incluant :
+- création de salle
+- votes en temps réel
+- gestion de la pause café
+- système de chat
 
-🔗 **Lien vers la vidéo** :  
-[https://github.com/cyrinenighaoui/pockerplan/issues/4
-](https://github.com/cyrinenighaoui/pockerplan/issues/4#issue-3731505960
-)
----
+🔗 **Voir la vidéo de démonstration** :  
+https://github.com/cyrinenighaoui/pockerplan/issues/4
 
-⚠️ REMARQUE IMPORTANTE AVANT LE TEST (À LIRE)
+
+⚠️ **REMARQUE IMPORTANTE AVANT LE TEST (À LIRE)**
 
 Pour tester correctement plusieurs utilisateurs / sessions en parallèle :
 
