@@ -7,6 +7,7 @@
 - votes en temps réel
 - gestion de la pause café
 - système de chat
+- Dashboard Admin
 
 🔗 **Voir la vidéo de démonstration** :  
 [https://github.com/cyrinenighaoui/pockerplan/issues/4 ](https://github.com/cyrinenighaoui/pockerplan/issues/4#issue-3731505960 )
