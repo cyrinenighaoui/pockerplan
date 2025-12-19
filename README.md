@@ -111,9 +111,8 @@ Aucune autre installation n’est nécessaire.
 
 LANCER L’APPLICATION
 
-À la racine du projet :
+**À la racine du projet** :
 ```bash
-cd PORJETPOCKERFINAL
 docker compose build
 docker compose up
 ```
